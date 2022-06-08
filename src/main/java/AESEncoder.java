@@ -10,8 +10,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
+
 
 public class AESEncoder {
 
@@ -60,7 +59,7 @@ public class AESEncoder {
             NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 
-        Cipher cipher = Cipher.getInstance(algorithm);
+        Cipher cipher = Cipher.getInstance(algorithm); //TODO: Agregar que cuando el modo no toma IV sacarlo
         cipher.init(Cipher.ENCRYPT_MODE, key, iv);
         encryptOrDecrypt(cipher);
 

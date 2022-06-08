@@ -8,6 +8,10 @@ public class BMPSteganographEncoder {
     private final BMPEditor editor;
     private byte[] encodingBytes;
 
+    public BMPEditor getEditor() {
+        return editor;
+    }
+
     public BMPSteganographEncoder(BufferedImage inputBMP, byte[] encodingBytes) throws IOException {
         editor = new BMPEditor(inputBMP);
         this.encodingBytes = encodingBytes; // TODO Agregar al principio los bytes de tamaño y al final la extension

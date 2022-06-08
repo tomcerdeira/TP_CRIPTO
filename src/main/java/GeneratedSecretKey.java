@@ -8,11 +8,11 @@ import java.security.spec.KeySpec;
 
 public class GeneratedSecretKey {
 
-    public static SecretKey getKeyFromPassword(String secretKeyAlgorithm, String encryptAlgorithm, String password, String salt)
+    public static SecretKey getKeyFromPassword(String secretKeyAlgorithm, String encryptAlgorithm, String password, String salt,Integer keyLength)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
 
         SecretKeyFactory factory = SecretKeyFactory.getInstance(secretKeyAlgorithm);
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), 65536, 256);
+        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), 65536, keyLength);
         return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), encryptAlgorithm);
     }
 

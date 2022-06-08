@@ -23,8 +23,8 @@ public class Main {
     private static final String STEGANOGRAPED_FILE = "src/main/resources/stegenograped.bmp";
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        SecretKey key = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES","password", "salt");
-        AESEncoder encoder = new AESEncoder("AES/CBC/PKCS5Padding",FILE_TO_ENCRYPT,FILE_ENCRYPTED,key,AESEncoder.generateIv());
+        SecretKey key = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES","password", "salt",192);
+        AESEncoder encoder = new AESEncoder("AES/ECB/PKCS5Padding",FILE_TO_ENCRYPT,FILE_ENCRYPTED,key,AESEncoder.generateIv());
 
         encoder.encryptFile();
         File outputfile = new File(FILE_ENCRYPTED);
