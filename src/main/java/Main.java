@@ -31,11 +31,11 @@ public class Main {
 
 
         AESEncoder encoder = new AESEncoder();
-        SecretKey key = AESEncoder.getKeyFromPassword("password", "salt");
+        SecretKey key = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES","password", "salt");
         String algo = "AES/CBC/PKCS5Padding";
         IvParameterSpec ivParameterSpec = AESEncoder.generateIv();
-        File file = new File("/home/santiago/Desktop/TP_CRIPTO/src/main/resources/testImage.bmp");
-        File outputFile = new File("/home/santiago/Desktop/TP_CRIPTO/src/main/resources/testImageEncry.bmp");
+        File file = new File("src/main/resources/testImage.bmp");
+        File outputFile = new File("src/main/resources/testImageEncry.bmp");
         AESEncoder.encryptFile(algo,key,ivParameterSpec,file,outputFile);
         AESEncoder.decryptFile(algo,key,ivParameterSpec,outputFile,file);
 
