@@ -8,6 +8,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -17,27 +18,26 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 
 public class Main {
+    private static final String FILE_TO_ENCRYPT = "src/main/resources/testImage.bmp";
+    private static final String FILE_ENCRYPTED = "src/main/resources/encrypted.bmp";
+    private static final String STEGANOGRAPED_FILE = "src/main/resources/stegenograped.bmp";
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-//        BufferedImage bufferedImage = ImageIO.read(Objects.requireNonNull(Main.class.getResource("testImage.bmp")));
-//        byte[] arr = new String("HOla").getBytes(StandardCharsets.UTF_8);
-//        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr);
-//        try {
-//            steganograph.LSB1();
-//            steganograph.getEditor().outputToFile("escondeHola.bmp");
-//        } catch (FileTooLargetException e) {
-//            e.printStackTrace();
-//        }
+        SecretKey key = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES","password", "salt",192);
+        AESEncoder encoder = new AESEncoder("AES/ECB/PKCS5Padding",FILE_TO_ENCRYPT,FILE_ENCRYPTED,key,AESEncoder.generateIv());
 
-
-        AESEncoder encoder = new AESEncoder();
-        SecretKey key = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES","password", "salt");
-        String algo = "AES/CBC/PKCS5Padding";
-        IvParameterSpec ivParameterSpec = AESEncoder.generateIv();
-        File file = new File("src/main/resources/testImage.bmp");
-        File outputFile = new File("src/main/resources/testImageEncry.bmp");
-        AESEncoder.encryptFile(algo,key,ivParameterSpec,file,outputFile);
-        AESEncoder.decryptFile(algo,key,ivParameterSpec,outputFile,file);
+        encoder.encryptFile();
+        File outputfile = new File(FILE_ENCRYPTED);
+        FileInputStream f1 = new FileInputStream(outputfile);
+        BufferedImage bufferedImage = ImageIO.read(Objects.requireNonNull(Main.class.getResource("medianoche1.bmp")));
+        byte[] arr = f1.readAllBytes();
+        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr);
+        try {
+            steganograph.LSB1();
+            steganograph.getEditor().outputToFile(STEGANOGRAPED_FILE);
+        } catch (FileTooLargetException e) {
+            e.printStackTrace();
+        }
 
 
     }
