@@ -13,11 +13,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
-public class AESEncoder {    public void LSBImproved(){
-        //TODO
-    }
-
-
+public class AESEncoder {
     public static SecretKey getKeyFromPassword(String password, String salt)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
 
@@ -40,6 +36,7 @@ public class AESEncoder {    public void LSBImproved(){
 
         Cipher cipher = Cipher.getInstance(algorithm);
         cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+        inputFile.
         FileInputStream inputStream = new FileInputStream(inputFile);
         FileOutputStream outputStream = new FileOutputStream(outputFile);
         byte[] buffer = new byte[64];
