@@ -1,16 +1,11 @@
 import exceptions.FileTooLargetException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.*;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -23,10 +18,12 @@ public class Main {
     private static final String STEGANOGRAPED_FILE = "src/main/resources/stegenograped.bmp";
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        SecretKey key = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES","password", "salt",192);
-        AESEncoder encoder = new AESEncoder("AES/ECB/PKCS5Padding",FILE_TO_ENCRYPT,FILE_ENCRYPTED,key,AESEncoder.generateIv());
 
-        encoder.encryptFile();
+        SecretKey keyForAes = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES","password", "salt",192);
+
+        AESEncoder aesEncoder = new AESEncoder("AES/ECB/PKCS5Padding",FILE_TO_ENCRYPT,FILE_ENCRYPTED, keyForAes, AESEncoder.generateIv());
+
+        aesEncoder.encryptFile();
         File outputfile = new File(FILE_ENCRYPTED);
         FileInputStream f1 = new FileInputStream(outputfile);
         BufferedImage bufferedImage = ImageIO.read(Objects.requireNonNull(Main.class.getResource("medianoche1.bmp")));
@@ -39,6 +36,18 @@ public class Main {
             e.printStackTrace();
         }
 
+        ////////////////////////// Para DES
+
+//        String passwordForDes = "password";
+//        SecretKey keyForDes = SecretKeyFactory.getInstance("DES").generateSecret(new DESKeySpec(passwordForDes.getBytes()));
+//
+//        DESEncoder desEncoder = new DESEncoder(FILE_TO_ENCRYPT, FILE_ENCRYPTED, keyForDes);
+//
+//        // Test Encrypt
+//        desEncoder.encryptFile();
+//
+//        // Test Decrypt
+//        //desEncoder.decryptFile("src/main/resources/encrypted.bmp", "src/main/resources/inverseDES.bmp");
 
     }
 
