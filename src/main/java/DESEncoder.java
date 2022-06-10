@@ -73,4 +73,9 @@ public class DESEncoder implements Encoder{
         }
     }
 
+    @Override
+    public File getEncryptedFile(){
+        return this.outputFile;
+    }
+
 }
