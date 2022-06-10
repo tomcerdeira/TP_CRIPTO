@@ -10,6 +10,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class Main {
@@ -17,15 +18,26 @@ public class Main {
     private static final String FILE_ENCRYPTED = "src/main/resources/encrypted.bmp";
     private static final String STEGANOGRAPED_FILE = "src/main/resources/stegenograped.bmp";
 
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException{
+
+        ArgumentsParser argsParser = new ArgumentsParser(args);
+        File fileToEncrypt = new File(Arrays.stream(argsParser.getArgumentValue("in")).findAny().get());
+        File fileCarrier = new File(Arrays.stream(argsParser.getArgumentValue("p")).findAny().get());
+        File fileSteganographed = new File(Arrays.stream(argsParser.getArgumentValue("out")).findAny().get());
+        String stegMode = Arrays.stream(argsParser.getArgumentValue("steg")).findAny().get();
+        String encodeMode = "AES/CBC/PKCS5Padding"; // aes128 en modo CBC por default.
+        Integer keyLen = 128;
+
+
+
+
 
         SecretKey keyForAes = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES","password", "salt",192);
 
-        AESEncoder aesEncoder = new AESEncoder("AES/ECB/PKCS5Padding",FILE_TO_ENCRYPT,FILE_ENCRYPTED, keyForAes, AESEncoder.generateIv());
+        Encoder aesEncoder = new AESEncoder("AES/CBC/PKCS5Padding",FILE_TO_ENCRYPT,FILE_ENCRYPTED, keyForAes, AESEncoder.generateIv());
 
         aesEncoder.encryptFile();
-        File outputfile = new File(FILE_ENCRYPTED);
-        FileInputStream f1 = new FileInputStream(outputfile);
+        FileInputStream f1 = new FileInputStream(fileSteganographed);
         BufferedImage bufferedImage = ImageIO.read(Objects.requireNonNull(Main.class.getResource("medianoche1.bmp")));
         byte[] arr = f1.readAllBytes();
         BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr);
