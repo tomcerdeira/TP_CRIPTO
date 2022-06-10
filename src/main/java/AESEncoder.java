@@ -81,4 +81,8 @@ public class AESEncoder implements Encoder{
         }
     }
 
+    @Override
+    public File getEncryptedFile(){
+        return this.outputFile;
+    }
 }

@@ -21,29 +21,29 @@ public class Main {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException{
 
         ArgumentsParser argsParser = new ArgumentsParser(args);
-        File fileToEncrypt = new File(Arrays.stream(argsParser.getArgumentValue("in")).findAny().get());
-        File fileCarrier = new File(Arrays.stream(argsParser.getArgumentValue("p")).findAny().get());
-        File fileSteganographed = new File(Arrays.stream(argsParser.getArgumentValue("out")).findAny().get());
-        String stegMode = Arrays.stream(argsParser.getArgumentValue("steg")).findAny().get();
-        String encodeMode = "AES/CBC/PKCS5Padding"; // aes128 en modo CBC por default.
-        Integer keyLen = 128;
-
-
-
-
-
-        SecretKey keyForAes = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES","password", "salt",192);
-
-        Encoder aesEncoder = new AESEncoder("AES/CBC/PKCS5Padding",FILE_TO_ENCRYPT,FILE_ENCRYPTED, keyForAes, AESEncoder.generateIv());
-
-        aesEncoder.encryptFile();
-        FileInputStream f1 = new FileInputStream(fileSteganographed);
-        BufferedImage bufferedImage = ImageIO.read(Objects.requireNonNull(Main.class.getResource("medianoche1.bmp")));
-        byte[] arr = f1.readAllBytes();
+        byte[] arr = null;
+        if(argsParser.encodeMode) {
+            argsParser.encoder.encryptFile();
+            FileInputStream f1 = new FileInputStream(argsParser.encoder.getEncryptedFile());
+            arr = f1.readAllBytes();
+        }
+        BufferedImage bufferedImage = ImageIO.read(Objects.requireNonNull(Main.class.getResource(argsParser.fileCarrier.getPath())));
         BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr);
         try {
-            steganograph.LSB1();
-            steganograph.getEditor().outputToFile(STEGANOGRAPED_FILE);
+            switch (argsParser.stegMode){
+                case "LSB1":
+                    steganograph.LSB1();
+                    break;
+                case "LSB4":
+                    steganograph.LSB4();
+                    break;
+                case "LSBI":
+                    steganograph.LSBImproved();
+                    break;
+                default:
+                    System.out.println("SIN STEGMODE");
+            }
+            steganograph.getEditor().outputToFile(argsParser.fileSteganographed.getPath());
         } catch (FileTooLargetException e) {
             e.printStackTrace();
         }
