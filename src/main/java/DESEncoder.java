@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 
-public class DESEncoder {
+public class DESEncoder implements Encoder{
 
     private  File inputFile;
     private  File outputFile;
@@ -29,37 +29,48 @@ public class DESEncoder {
 
     }
 
-    public void encryptFile() throws IOException, BadPaddingException, IllegalBlockSizeException {
-        FileInputStream inputStream = new FileInputStream(this.inputFile);
-        FileOutputStream outputStream = new FileOutputStream(this.outputFile);
+    @Override
+    public void encryptFile(){
+        try {
+            FileInputStream inputStream = new FileInputStream(this.inputFile);
+            FileOutputStream outputStream = new FileOutputStream(this.outputFile);
 
-        byte[] fileBytes = inputStream.readAllBytes();
-        byte[] transformedBytes = ecipher.doFinal(fileBytes);
-        transformedBytes = Base64.getEncoder().encode(transformedBytes);
+            byte[] fileBytes = inputStream.readAllBytes();
+            byte[] transformedBytes = ecipher.doFinal(fileBytes);
+            transformedBytes = Base64.getEncoder().encode(transformedBytes);
 
-        if (transformedBytes != null) {
-            outputStream.write(transformedBytes);
+            if (transformedBytes != null) {
+                outputStream.write(transformedBytes);
+            }
+
+            inputStream.close();
+            outputStream.close();
+        }catch(IOException | BadPaddingException | IllegalBlockSizeException e){
+            e.printStackTrace();
+            throw new RuntimeException();
         }
-
-        inputStream.close();
-        outputStream.close();
     }
 
+    @Override
+    public void decryptFile(String inputFilePath, String outPutFilePath){
+        try {
+            this.inputFile = new File(inputFilePath);
+            this.outputFile = new File(outPutFilePath);
 
-    public void decryptFile(String inputFilePath, String outPutFilePath) throws IOException, BadPaddingException, IllegalBlockSizeException {
-        this.inputFile = new File(inputFilePath);
-        this.outputFile = new File(outPutFilePath);
+            FileInputStream inputStream = new FileInputStream(this.inputFile);
+            FileOutputStream outputStream = new FileOutputStream(this.outputFile);
 
-        FileInputStream inputStream = new FileInputStream(this.inputFile);
-        FileOutputStream outputStream = new FileOutputStream(this.outputFile);
+            byte[] fileBytes = Base64.getDecoder().decode(inputStream.readAllBytes());
+            byte[] transformedBytes = dcipher.doFinal(fileBytes);
 
-        byte[] fileBytes = Base64.getDecoder().decode(inputStream.readAllBytes());
-        byte[] transformedBytes = dcipher.doFinal(fileBytes);
+            if (transformedBytes != null) {
+                outputStream.write(transformedBytes);
+            }
 
-        if (transformedBytes != null) {
-            outputStream.write(transformedBytes);
+        }catch( IOException| BadPaddingException|IllegalBlockSizeException e){
+            e.printStackTrace();
+            throw  new RuntimeException();
         }
-
     }
 
 }

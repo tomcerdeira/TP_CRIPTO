@@ -1,7 +1,5 @@
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,23 +10,22 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 
-public class AESEncoder {
+public class AESEncoder implements Encoder{
 
-    private  File inputFile;
-    private  File outputFile;
+    private File inputFile;
+    private File outputFile;
     private final String algorithm;
     private final SecretKey key;
     private final IvParameterSpec iv;
 
 
-    public AESEncoder(String algorithm,String inputFilePath,String outPutFilePath,SecretKey key, IvParameterSpec iv) {
+    public AESEncoder(String algorithm, String inputFilePath, String outPutFilePath, SecretKey key, IvParameterSpec iv) {
         this.inputFile = new File(inputFilePath);
         this.outputFile = new File(outPutFilePath);
         this.algorithm = algorithm;
         this.key = key;
         this.iv = iv;
     }
-
 
     public static IvParameterSpec generateIv() {
         byte[] iv = new byte[16];
@@ -55,24 +52,33 @@ public class AESEncoder {
         outputStream.close();
     }
 
-    public  void encryptFile() throws IOException, NoSuchPaddingException,
-            NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
-            BadPaddingException, IllegalBlockSizeException {
-
-        Cipher cipher = Cipher.getInstance(algorithm); //TODO: Agregar que cuando el modo no toma IV sacarlo
-        cipher.init(Cipher.ENCRYPT_MODE, key, iv);
-        encryptOrDecrypt(cipher);
+    @Override
+    public void encryptFile() {
+        try {
+            Cipher cipher = Cipher.getInstance(algorithm); //TODO: Agregar que cuando el modo no toma IV sacarlo
+            cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+            encryptOrDecrypt(cipher);
+        } catch (IOException | NoSuchPaddingException |
+                NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException |
+                BadPaddingException | IllegalBlockSizeException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
 
     }
 
-
-    public void decryptFile(String inputFilePath, String outPutFilePath) throws IOException, NoSuchPaddingException,
-            NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
-            BadPaddingException, IllegalBlockSizeException {
-        this.inputFile = new File(inputFilePath);
-        this.outputFile = new File(outPutFilePath);
-        Cipher cipher = Cipher.getInstance(algorithm);
-        cipher.init(Cipher.DECRYPT_MODE, key, iv);
-        encryptOrDecrypt(cipher);
+    @Override
+    public void decryptFile(String inputFilePath, String outPutFilePath) {
+        try {
+            this.inputFile = new File(inputFilePath);
+            this.outputFile = new File(outPutFilePath);
+            Cipher cipher = Cipher.getInstance(algorithm);
+            cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            encryptOrDecrypt(cipher);
+        } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
     }
+
 }
