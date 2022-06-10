@@ -149,4 +149,16 @@ public class BMPEditor {
     public ByteIterator byteIterator(){
         return new ByteIterator(this);
     }
+
+    public byte[] getCoverImageBytes() {
+        return bytes;
+    }
+
+    public void setBytes(byte[] bytes) {
+        this.bytes = bytes;
+    }
+
+    public int getBitArrayOffset() {
+        return bitArrayOffset;
+    }
 }
