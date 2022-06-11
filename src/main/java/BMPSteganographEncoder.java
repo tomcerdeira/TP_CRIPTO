@@ -38,7 +38,7 @@ public class BMPSteganographEncoder {
         outputStream.write(editor.getCoverImageBytes(), 0, 54);
         outputStream.write(len);
         outputStream.write(editor.getCoverImageBytes(), 58, editor.getCoverImageBytes().length-58);
-        //        outputStream.write(extension.getBytes(StandardCharsets.UTF_8)); // TODO agregar extension
+        outputStream.write(extension.getBytes(StandardCharsets.UTF_8));
 
         editor.setBytes(outputStream.toByteArray());
         System.out.println(maxHiddenFileSize(editor));

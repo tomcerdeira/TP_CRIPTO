@@ -21,15 +21,13 @@ public class Main {
         byte[] arr = new byte[1];
         String extension = "";
 
-        // Modo -embed
         if(!argsParser.revertMode) {
             FileInputStream f1 = new FileInputStream(argsParser.fileToEncrypt);
             arr = f1.readAllBytes();
             int extensionIndex = argsParser.fileToEncrypt.toString().lastIndexOf('.');
-            extension = argsParser.fileToEncrypt.toString().substring(extensionIndex+1);
+            extension = "." + argsParser.fileToEncrypt.toString().substring(extensionIndex+1) + "\0";
         }
 
-        // Modo -extract
         if(argsParser.encodeMode) {
             argsParser.encoder.encryptFile();
             FileInputStream f2 = new FileInputStream(argsParser.encoder.getEncryptedFile());
@@ -43,15 +41,25 @@ public class Main {
             switch (argsParser.stegMode){
                 case "LSB1":
                     if(argsParser.revertMode){
+
                         System.out.println("-extract");
                         FileInputStream f3 = new FileInputStream(argsParser.fileCarrier);
                         byte[] desencoded = BMPSteganographEncoder.revertLSB1(f3.readAllBytes());
-                        FileOutputStream outputStream = new FileOutputStream(argsParser.outputFile);
-                        outputStream.write(desencoded);
-                        outputStream.close();
                         if(argsParser.encodeMode) {
                             argsParser.encoder.decryptFile(argsParser.outputFile.getPath(), "SALIDA_LSB1_REVERT_MODE.bmp");
                         }
+
+                        byte[] forExtension = new FileInputStream(argsParser.fileCarrier).readAllBytes();
+                        StringBuilder fileExtension = new StringBuilder();
+                        for (int i=forExtension.length-2; forExtension[i]!='.'; i--){
+                            fileExtension.append((char)forExtension[i]);
+                        }
+                        String extensionOfFile = fileExtension.append('.').reverse().toString();
+
+                        System.out.println(argsParser.outputFile + extensionOfFile);
+                        FileOutputStream outputStreamLSB1 = new FileOutputStream(argsParser.outputFile + extensionOfFile);
+                        outputStreamLSB1.write(desencoded);
+                        outputStreamLSB1.close();
 
                     }else {
                         System.out.println("-embed");
@@ -69,12 +77,23 @@ public class Main {
                         System.out.println("-extract");
                         FileInputStream f3 = new FileInputStream(argsParser.fileCarrier);
                         byte[] desencodedLSB4 = BMPSteganographEncoder.revertLSB4(f3.readAllBytes());
-                        FileOutputStream outputStreamLSB4 = new FileOutputStream(argsParser.outputFile);
-                        outputStreamLSB4.write(desencodedLSB4);
-                        outputStreamLSB4.close();
+
                         if(argsParser.encodeMode) {
                             argsParser.encoder.decryptFile("desencodedLSB4.bmp", "aesDesLSB4.bmp");
                         }
+
+                        byte[] forExtension = new FileInputStream(argsParser.fileCarrier).readAllBytes();
+                        StringBuilder fileExtension = new StringBuilder();
+                        for (int i=forExtension.length-2; forExtension[i]!='.'; i--){
+                            fileExtension.append((char)forExtension[i]);
+                        }
+                        String extensionOfFile = fileExtension.append('.').reverse().toString();
+
+                        System.out.println(argsParser.outputFile + extensionOfFile);
+                        FileOutputStream outputStreamLSB4 = new FileOutputStream(argsParser.outputFile + extensionOfFile);
+                        outputStreamLSB4.write(desencodedLSB4);
+                        outputStreamLSB4.close();
+
                     }else{
                         System.out.println("-embed");
                         steganograph.LSB4();
