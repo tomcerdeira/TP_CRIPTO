@@ -5,6 +5,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -24,18 +25,22 @@ public class Main {
         ArgumentsParser argsParser = new ArgumentsParser(args);
         FileInputStream f1 = new FileInputStream(argsParser.fileToEncrypt);
         byte[] arr = f1.readAllBytes();
-//        if(argsParser.encodeMode) {
-//            argsParser.encoder.encryptFile();
-//            FileInputStream f1 = new FileInputStream(argsParser.encoder.getEncryptedFile());
-//            arr = f1.readAllBytes();
-//        }
+        if(argsParser.encodeMode) {
+            argsParser.encoder.encryptFile();
+            FileInputStream f2 = new FileInputStream(argsParser.encoder.getEncryptedFile());
+            arr = f2.readAllBytes();
+        }
         BufferedImage bufferedImage = ImageIO.read(Objects.requireNonNull(Main.class.getResource(argsParser.fileCarrier.getPath())));
         BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr,"bmp");
         try {
             switch (argsParser.stegMode){
                 case "LSB1":
                     steganograph.LSB1();
-                    steganograph.revertLSB1();
+                    byte[] desencoded = steganograph.revertLSB1();
+                    FileOutputStream outputStream = new FileOutputStream("desencodedLSB1.bmp");
+                    outputStream.write(desencoded);
+                    outputStream.close();
+                    argsParser.encoder.decryptFile("desencodedLSB1.bmp","aesDesLSB1.bmp");
                     break;
                 case "LSB4":
                     steganograph.LSB4();
