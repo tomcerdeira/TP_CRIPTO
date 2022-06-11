@@ -56,7 +56,12 @@ public class AESEncoder implements Encoder{
     public void encryptFile() {
         try {
             Cipher cipher = Cipher.getInstance(algorithm); //TODO: Agregar que cuando el modo no toma IV sacarlo
-            cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+
+            if(algorithm.contains("ECB")){
+                cipher.init(Cipher.ENCRYPT_MODE, key);
+            }else{
+                cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+            }
             encryptOrDecrypt(cipher);
         } catch (IOException | NoSuchPaddingException |
                 NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException |
@@ -73,7 +78,12 @@ public class AESEncoder implements Encoder{
             this.inputFile = new File(inputFilePath);
             this.outputFile = new File(outPutFilePath);
             Cipher cipher = Cipher.getInstance(algorithm);
-            cipher.init(Cipher.DECRYPT_MODE, key, iv);
+
+            if(algorithm.contains("ECB")){
+                cipher.init(Cipher.DECRYPT_MODE, key);
+            }else{
+                cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            }
             encryptOrDecrypt(cipher);
         } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
