@@ -106,6 +106,51 @@ public class BMPSteganographEncoder {
         }
     }
 
+    public byte[] revertLSB4() throws IOException {
+        byte[] image = this.editor.getCoverImageBytes();
+        // Obtenemos los bytes del largo de la data que se escondio en la imagen portadora
+        byte[] len = new byte[4] ;
+        for (int i=0; i<4; i++){
+            len[i]=image[i];
+        }
+        // Transformamos esos bytes a un int para facilitar su lecutra
+        int encodedDataLength= new BigInteger(len).intValue();
+        // Calculamos la cantidad de bytes de la imagen portadora a leer para obtener la data. Como es LSB4, deben leerse 2 bytes de la portadora para obtener 1 byte de la data escondida
+        int cantBitsToRead = encodedDataLength * 2;
+
+        StringBuilder byteBuilder = new StringBuilder();
+        // Offset para excluir headers y tamano de la data escondida
+        int offset = this.editor.getBitArrayOffset();
+        // Instanciamos el vector que vamos a guardar lo que extraemos
+        byte[] desencondedData = new byte[encodedDataLength];
+
+        int index =0;
+        int j = 0;
+        for (int i = 0 ; i<cantBitsToRead; i++){
+            // Leemos un byte de la imagen y nos quedamos con su ultimo bit
+            byte b = image[offset + i];
+
+            StringBuilder aux = new StringBuilder();
+            for(int dec = 0; dec < 4; dec++){ // Itero decalando los bits del byte de la imagen portadora obteniendo los 4 bits relevantes
+                int lastBit = b & 1;
+                aux.append(lastBit);
+                b = (byte) (b>>1);
+            }
+            byteBuilder.append(aux);
+            if(j==1){
+                /// Despues de armar un byte en string, lo transformamos a un tipo byte. OBS hay que usarlo reverse ya que estamos trabajando en LITTLE_ENDIAN
+                desencondedData[index++] = (byte)Integer.parseInt(byteBuilder.reverse().toString(), 2);
+                byteBuilder = new StringBuilder();
+                j=0;
+            }else {
+                j++;
+            }
+        }
+
+        return desencondedData;
+
+    }
+
     public void LSBImproved() throws FileTooLargetException, IOException {
 
         if( (encodingBytes.length * 8) > editor.getBitArraySize())
