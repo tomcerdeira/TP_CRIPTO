@@ -24,17 +24,20 @@ public class BMPSteganographEncoder {
         return editor;
     }
 
-    public BMPSteganographEncoder(BufferedImage inputBMP, byte[] encodingBytes,String extension) throws IOException {
+    public BMPSteganographEncoder(BufferedImage inputBMP, byte[] encodingBytes, String extension) throws IOException {
+
         editor = new BMPEditor(inputBMP);
         originalImage = inputBMP;
+
         this.encodingBytes = encodingBytes;
+
         // Agreamos al principio los bytes de tamaño y al final la extension TODO REVISAR
         byte[] len = ByteBuffer.allocate(4).putInt(encodingBytes.length).array();
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(editor.getCoverImageBytes(), 0, 54);
         outputStream.write(len);
         outputStream.write(editor.getCoverImageBytes(), 58, editor.getCoverImageBytes().length-58);
-        System.out.println(len + "len");
         //        outputStream.write(extension.getBytes(StandardCharsets.UTF_8)); // TODO agregar extension
 
         editor.setBytes(outputStream.toByteArray());
@@ -57,8 +60,8 @@ public class BMPSteganographEncoder {
     }
 
 
-    public byte[] revertLSB1() throws IOException {
-        byte[] image = this.editor.getCoverImageBytes();
+    public static byte[] revertLSB1(byte[] aux) throws IOException {
+        byte[] image = aux;
         // Obtenemos los bytes del largo de la data que se escondio en la imagen portadora
         byte[] len = new byte[4] ;
         for (int i=54 , j=0; i<58; i++, j++){
@@ -72,7 +75,7 @@ public class BMPSteganographEncoder {
 
         StringBuilder byteBuilder = new StringBuilder();
         // Offset para excluir headers y tamano de la data escondida
-        int offset = this.editor.getBitArrayOffset();
+        int offset = 58;
         // Instanciamos el vector que vamos a guardar lo que extraemos
         byte[] desencondedData = new byte[encodedDataLength];
 

@@ -15,9 +15,13 @@ import java.util.Objects;
 
 public class Main {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException {
+
         ArgumentsParser argsParser = new ArgumentsParser(args);
+
         byte[] arr = new byte[1];
         String extension = "";
+
+        // Modo -embed
         if(!argsParser.revertMode) {
             FileInputStream f1 = new FileInputStream(argsParser.fileToEncrypt);
             arr = f1.readAllBytes();
@@ -25,31 +29,39 @@ public class Main {
             extension = argsParser.fileToEncrypt.toString().substring(extensionIndex+1);
         }
 
-
-
+        // Modo -extract
         if(argsParser.encodeMode) {
             argsParser.encoder.encryptFile();
             FileInputStream f2 = new FileInputStream(argsParser.encoder.getEncryptedFile());
             arr = f2.readAllBytes();
         }
 
-        System.out.println(argsParser.fileCarrier.getAbsolutePath());
         BufferedImage bufferedImage = ImageIO.read(new File(argsParser.fileCarrier.getAbsolutePath()));
-        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr,extension);
+        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr, extension);
 
         try {
             switch (argsParser.stegMode){
                 case "LSB1":
                     if(argsParser.revertMode){
-                        byte[] desencoded = steganograph.revertLSB1();
-                        FileOutputStream outputStream = new FileOutputStream("LSB1REVERTED2.bmp");
+                        System.out.println("-extract");
+                        FileInputStream f3 = new FileInputStream(argsParser.fileCarrier);
+                        byte[] desencoded = BMPSteganographEncoder.revertLSB1(f3.readAllBytes());
+                        FileOutputStream outputStream = new FileOutputStream(argsParser.outputFile);
                         outputStream.write(desencoded);
                         outputStream.close();
                         if(argsParser.encodeMode) {
-                            argsParser.encoder.decryptFile("desencodedLSB1.bmp", "aesDesLSB1.bmp");
+                            argsParser.encoder.decryptFile(argsParser.outputFile.getPath(), "SALIDA_LSB1_REVERT_MODE.bmp");
                         }
+
                     }else {
+                        System.out.println("-embed");
+
                         steganograph.LSB1();
+                        FileOutputStream outputStream = new FileOutputStream(argsParser.outputFile);
+                        byte[] aux = steganograph.getEditor().getCoverImageBytes();
+                        outputStream.write(aux);
+                        outputStream.close();
+
                     }
                     break;
                 case "LSB4":
