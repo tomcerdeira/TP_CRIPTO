@@ -6,6 +6,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -19,20 +21,21 @@ public class Main {
     private static final String STEGANOGRAPED_FILE = "src/main/resources/stegenograped.bmp";
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException{
-
         ArgumentsParser argsParser = new ArgumentsParser(args);
-        byte[] arr = null;
-        if(argsParser.encodeMode) {
-            argsParser.encoder.encryptFile();
-            FileInputStream f1 = new FileInputStream(argsParser.encoder.getEncryptedFile());
-            arr = f1.readAllBytes();
-        }
+        FileInputStream f1 = new FileInputStream(argsParser.fileToEncrypt);
+        byte[] arr = f1.readAllBytes();
+//        if(argsParser.encodeMode) {
+//            argsParser.encoder.encryptFile();
+//            FileInputStream f1 = new FileInputStream(argsParser.encoder.getEncryptedFile());
+//            arr = f1.readAllBytes();
+//        }
         BufferedImage bufferedImage = ImageIO.read(Objects.requireNonNull(Main.class.getResource(argsParser.fileCarrier.getPath())));
-        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr);
+        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr,"bmp");
         try {
             switch (argsParser.stegMode){
                 case "LSB1":
                     steganograph.LSB1();
+                    steganograph.revertLSB1();
                     break;
                 case "LSB4":
                     steganograph.LSB4();

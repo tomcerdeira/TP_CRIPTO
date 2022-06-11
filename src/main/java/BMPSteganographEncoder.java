@@ -3,7 +3,15 @@ import exceptions.FileTooLargetException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
 import java.util.Objects;
 
 public class BMPSteganographEncoder {
@@ -16,18 +24,24 @@ public class BMPSteganographEncoder {
         return editor;
     }
 
-    public BMPSteganographEncoder(BufferedImage inputBMP, byte[] encodingBytes) throws IOException {
+    public BMPSteganographEncoder(BufferedImage inputBMP, byte[] encodingBytes,String extension) throws IOException {
         editor = new BMPEditor(inputBMP);
         originalImage = inputBMP;
-        this.encodingBytes = encodingBytes; // TODO Agregar al principio los bytes de tamaño y al final la extension
+        this.encodingBytes = encodingBytes;
+        // Agreamos al principio los bytes de tamaño y al final la extension TODO REVISAR
+        byte[] len = ByteBuffer.allocate(4).putInt(encodingBytes.length).array();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(len);
+        outputStream.write(editor.getCoverImageBytes());
+//        outputStream.write(extension.getBytes(StandardCharsets.UTF_8)); // TODO agregar extension
 
+        editor.setBytes(outputStream.toByteArray());
         System.out.println(maxHiddenFileSize(editor));
     }
 
     public void LSB1() throws FileTooLargetException {
         if( (encodingBytes.length * 8) > editor.getBitArraySize())
             throw new FileTooLargetException(Integer.toString(editor.getBitArraySize() / 8));
-
         ByteIterator iterator = editor.byteIterator();
         byte currentByte;
 
@@ -38,6 +52,44 @@ public class BMPSteganographEncoder {
                 currentByte >>= 1;
             }
         }
+    }
+
+
+    public void revertLSB1() throws IOException {
+        byte[] image = this.editor.getCoverImageBytes();
+        byte[] len = new byte[4] ;
+        for (int i=0; i<4; i++){
+            len[i]=image[i];
+        }
+
+        Integer length= new BigInteger(len).intValue();
+
+        Integer cantBitsToRead = length * 8;
+        List<Byte> toRet = new ArrayList<>();
+        StringBuilder str = new StringBuilder();
+        Integer offset = 58;
+        byte[] aux3 = new byte[length];
+        int index =0;
+        int j = 0;
+
+        for (int i = 0 ; i<cantBitsToRead; i++){
+             byte b = image[offset + i];
+             int lastBit = b & 1;
+             str.append(lastBit);
+             if(j==7){
+
+                 aux3[index++] = (byte)Integer.parseInt(str.reverse().toString(), 2);
+                 str = new StringBuilder();
+                 j=0;
+             }else {
+                 j++;
+             }
+        }
+        this.editor.setBytes(aux3);
+        this.editor.outputToFile("AYUDA");
+
+
+
     }
 
     public void LSB4() throws FileTooLargetException {

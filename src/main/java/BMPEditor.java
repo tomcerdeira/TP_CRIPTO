@@ -45,12 +45,14 @@ public class BMPEditor {
     private final int rowBytesSize;
 
     private final int bitArraySize;
+    private final byte[] bytes2;
 
     public BMPEditor(BufferedImage image) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, "bmp", baos);
 
         bytes = baos.toByteArray();
+        bytes2 = baos.toByteArray();
 
         if(!verifyVersion3())
             throw new NotVersion3BMPException();
@@ -59,7 +61,8 @@ public class BMPEditor {
         if(!verifyBitsPerPixel())
             throw new BitsPerPixelException();
 
-        bitArrayOffset = getIntValue(BIT_ARRAY_OFFSET);
+        bitArrayOffset = getIntValue(BIT_ARRAY_OFFSET) + 4; //TODO CORREGIR CONSTANTE PARA QUE SEA 58
+        System.out.println(bitArrayOffset);
         bitArraySize = bytes.length - bitArrayOffset;
 
         // Since no compression method is used Bitmap_Width == Image_Width
@@ -124,7 +127,7 @@ public class BMPEditor {
         return wrapped.getShort();
     }
 
-    private int getIntValue(int offset) {
+    public int getIntValue(int offset) {
         ByteBuffer wrapped = ByteBuffer.wrap(bytes, offset, 4);
         wrapped.order(ByteOrder.LITTLE_ENDIAN); // All integer values in BMP are stored in LITTLE ENDIAN
         return wrapped.getInt();
