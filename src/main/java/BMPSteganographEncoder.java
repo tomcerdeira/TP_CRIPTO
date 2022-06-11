@@ -112,12 +112,12 @@ public class BMPSteganographEncoder {
         }
     }
 
-    public byte[] revertLSB4() throws IOException {
-        byte[] image = this.editor.getCoverImageBytes();
+    public static byte[] revertLSB4(byte[] aux1) throws IOException {
+        byte[] image = aux1;
         // Obtenemos los bytes del largo de la data que se escondio en la imagen portadora
         byte[] len = new byte[4] ;
-        for (int i=0; i<4; i++){
-            len[i]=image[i];
+        for (int i=54 , j=0; i<58; i++, j++){
+            len[j]=image[i];
         }
         // Transformamos esos bytes a un int para facilitar su lecutra
         int encodedDataLength= new BigInteger(len).intValue();
@@ -126,7 +126,7 @@ public class BMPSteganographEncoder {
 
         StringBuilder byteBuilder = new StringBuilder();
         // Offset para excluir headers y tamano de la data escondida
-        int offset = this.editor.getBitArrayOffset();
+        int offset = 58;
         // Instanciamos el vector que vamos a guardar lo que extraemos
         byte[] desencondedData = new byte[encodedDataLength];
 

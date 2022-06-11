@@ -66,15 +66,22 @@ public class Main {
                     break;
                 case "LSB4":
                     if(argsParser.revertMode) {
-                        byte[] desencodedLSB4 = steganograph.revertLSB4();
-                        FileOutputStream outputStreamLSB4 = new FileOutputStream("desencodedLSB4.bmp");
+                        System.out.println("-extract");
+                        FileInputStream f3 = new FileInputStream(argsParser.fileCarrier);
+                        byte[] desencodedLSB4 = BMPSteganographEncoder.revertLSB4(f3.readAllBytes());
+                        FileOutputStream outputStreamLSB4 = new FileOutputStream(argsParser.outputFile);
                         outputStreamLSB4.write(desencodedLSB4);
                         outputStreamLSB4.close();
                         if(argsParser.encodeMode) {
                             argsParser.encoder.decryptFile("desencodedLSB4.bmp", "aesDesLSB4.bmp");
                         }
                     }else{
+                        System.out.println("-embed");
                         steganograph.LSB4();
+                        FileOutputStream outputStream = new FileOutputStream(argsParser.outputFile);
+                        byte[] aux = steganograph.getEditor().getCoverImageBytes();
+                        outputStream.write(aux);
+                        outputStream.close();
                     }
                     break;
                 case "LSBI":
