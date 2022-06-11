@@ -145,7 +145,7 @@ public class ArgumentsParser {
                     switch (encodeMode){
                         case "AES":{
                             SecretKey keyForAes = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES",password, "salt",keyLen);
-                            this.encoder = new AESEncoder("AES/"+blocksMode+"/PKCS5Padding",fileToEncrypt.getPath(),"aux",keyForAes,AESEncoder.generateIv());
+                            this.encoder = new AESEncoder("AES/"+blocksMode+"/PKCS5Padding",fileToEncrypt.getPath(),"aes",keyForAes,AESEncoder.generateIv());
                         }
                         case "DES":{
 

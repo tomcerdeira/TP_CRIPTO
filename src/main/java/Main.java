@@ -44,6 +44,11 @@ public class Main {
                     break;
                 case "LSB4":
                     steganograph.LSB4();
+                    byte[] desencodedLSB4 = steganograph.revertLSB4();
+                    FileOutputStream outputStreamLSB4 = new FileOutputStream("desencodedLSB4.bmp");
+                    outputStreamLSB4.write(desencodedLSB4);
+                    outputStreamLSB4.close();
+                    argsParser.encoder.decryptFile("desencodedLSB4.bmp","aesDesLSB4.bmp");
                     break;
                 case "LSBI":
                     steganograph.LSBImproved();
