@@ -1,6 +1,7 @@
 import exceptions.FileTooLargetException;
 
 import javax.crypto.*;
+import javax.crypto.spec.DESKeySpec;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -21,7 +22,7 @@ public class Main {
     private static final String FILE_ENCRYPTED = "src/main/resources/encrypted.bmp";
     private static final String STEGANOGRAPED_FILE = "src/main/resources/stegenograped.bmp";
 
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException{
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         ArgumentsParser argsParser = new ArgumentsParser(args);
         FileInputStream f1 = new FileInputStream(argsParser.fileToEncrypt);
         byte[] arr = f1.readAllBytes();
@@ -66,14 +67,16 @@ public class Main {
 //        String passwordForDes = "password";
 //        SecretKey keyForDes = SecretKeyFactory.getInstance("DES").generateSecret(new DESKeySpec(passwordForDes.getBytes()));
 //
-//        DESEncoder desEncoder = new DESEncoder(FILE_TO_ENCRYPT, FILE_ENCRYPTED, keyForDes);
+//        DESEncoder desEncoder = new DESEncoder("DES/CFB/PKCS5Padding" ,"src/main/resources/medianoche1.bmp", "src/main/resources/SALIDA.bmp", keyForDes);
 //
 //        // Test Encrypt
 //        desEncoder.encryptFile();
 //
 //        // Test Decrypt
-//        //desEncoder.decryptFile("src/main/resources/encrypted.bmp", "src/main/resources/inverseDES.bmp");
+//        desEncoder.decryptFile("src/main/resources/SALIDA.bmp", "src/main/resources/medianoche2.bmp");
 
     }
 
 }
+
+// -embed -in C:/Users/Tomas/Documents/ITBA/Cripto/TP/TP_CRIPTO/src/main/resources/kings.bmp -p kings.bmp -out out -steg LSB1 -pass hola
