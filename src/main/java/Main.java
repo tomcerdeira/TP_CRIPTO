@@ -3,6 +3,7 @@ import exceptions.FileTooLargetException;
 import javax.crypto.NoSuchPaddingException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,19 +16,25 @@ import java.util.Objects;
 public class Main {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException {
         ArgumentsParser argsParser = new ArgumentsParser(args);
-        FileInputStream f1 = new FileInputStream(argsParser.fileToEncrypt);
+        byte[] arr = new byte[1];
+        String extension = "";
+        if(!argsParser.revertMode) {
+            FileInputStream f1 = new FileInputStream(argsParser.fileToEncrypt);
+            arr = f1.readAllBytes();
+            int extensionIndex = argsParser.fileToEncrypt.toString().lastIndexOf('.');
+            extension = argsParser.fileToEncrypt.toString().substring(extensionIndex+1);
+        }
 
-        int extensionIndex = argsParser.fileToEncrypt.toString().lastIndexOf('.');
-        String extension = argsParser.fileToEncrypt.toString().substring(extensionIndex+1);
 
-        byte[] arr = f1.readAllBytes();
+
         if(argsParser.encodeMode) {
             argsParser.encoder.encryptFile();
             FileInputStream f2 = new FileInputStream(argsParser.encoder.getEncryptedFile());
             arr = f2.readAllBytes();
         }
-        System.exit(0);
-        BufferedImage bufferedImage = ImageIO.read(Objects.requireNonNull(Main.class.getResource(argsParser.fileCarrier.getPath())));
+
+        System.out.println(argsParser.fileCarrier.getAbsolutePath());
+        BufferedImage bufferedImage = ImageIO.read(new File(argsParser.fileCarrier.getAbsolutePath()));
         BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr,extension);
 
         try {
@@ -35,7 +42,7 @@ public class Main {
                 case "LSB1":
                     if(argsParser.revertMode){
                         byte[] desencoded = steganograph.revertLSB1();
-                        FileOutputStream outputStream = new FileOutputStream("desencodedLSB1.bmp");
+                        FileOutputStream outputStream = new FileOutputStream("LSB1REVERTED2.bmp");
                         outputStream.write(desencoded);
                         outputStream.close();
                         if(argsParser.encodeMode) {
@@ -56,7 +63,6 @@ public class Main {
                         }
                     }else{
                         steganograph.LSB4();
-
                     }
                     break;
                 case "LSBI":
@@ -65,7 +71,7 @@ public class Main {
                 default:
                     System.out.println("SIN STEGMODE");
             }
-            steganograph.getEditor().outputToFile(argsParser.outputFile.getPath());
+//            steganograph.getEditor().outputToFile(argsParser.outputFile.getPath());
         } catch (FileTooLargetException e) {
             e.printStackTrace();
         }

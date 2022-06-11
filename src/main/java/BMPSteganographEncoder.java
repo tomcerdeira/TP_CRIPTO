@@ -31,9 +31,11 @@ public class BMPSteganographEncoder {
         // Agreamos al principio los bytes de tamaño y al final la extension TODO REVISAR
         byte[] len = ByteBuffer.allocate(4).putInt(encodingBytes.length).array();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(editor.getCoverImageBytes(), 0, 54);
         outputStream.write(len);
-        outputStream.write(editor.getCoverImageBytes());
-//        outputStream.write(extension.getBytes(StandardCharsets.UTF_8)); // TODO agregar extension
+        outputStream.write(editor.getCoverImageBytes(), 58, editor.getCoverImageBytes().length-58);
+        System.out.println(len + "len");
+        //        outputStream.write(extension.getBytes(StandardCharsets.UTF_8)); // TODO agregar extension
 
         editor.setBytes(outputStream.toByteArray());
         System.out.println(maxHiddenFileSize(editor));
@@ -59,11 +61,12 @@ public class BMPSteganographEncoder {
         byte[] image = this.editor.getCoverImageBytes();
         // Obtenemos los bytes del largo de la data que se escondio en la imagen portadora
         byte[] len = new byte[4] ;
-        for (int i=0; i<4; i++){
-            len[i]=image[i];
+        for (int i=54 , j=0; i<58; i++, j++){
+            len[j]=image[i];
         }
         // Transformamos esos bytes a un int para facilitar su lecutra
         int encodedDataLength= new BigInteger(len).intValue();
+        System.out.println(encodedDataLength+"A A");
         // Calculamos la cantidad de bytes de la imagen portadora a leer para obtener la data. Como es LSB1, deben leerse 8 bytes de la portadora para obtener 1 byte de la data escondida
         int cantBitsToRead = encodedDataLength * 8;
 
