@@ -1,7 +1,12 @@
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
@@ -19,7 +24,7 @@ public class ArgumentsParser {
     boolean revertMode = false;
 
 
-    ArgumentsParser(String[] arguments) throws NoSuchAlgorithmException, InvalidKeySpecException, FileNotFoundException {
+    ArgumentsParser(String[] arguments) throws NoSuchAlgorithmException, InvalidKeySpecException, FileNotFoundException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException {
         this.args = Arrays.asList(arguments);
         map();
         if (!checkIfCorrectArgs()){
@@ -84,7 +89,7 @@ public class ArgumentsParser {
     }
 
     // TODO: HAcer que en vez de retornar un boolean devuelva una instancia de una clase que encapsule el coportamiento dado por los parametros
-    public boolean checkIfCorrectArgs() throws NoSuchAlgorithmException, InvalidKeySpecException, FileNotFoundException {
+    public boolean checkIfCorrectArgs() throws NoSuchAlgorithmException, InvalidKeySpecException, FileNotFoundException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException {
         if(this.containsFlag("embed")) {
             this.revertMode = false;
             if (this.containsArg("in") && this.containsArg("p") && this.containsArg("out") && this.containsArg("steg") && this.getArgumentValue("in").length != 0 && this.getArgumentValue("p").length != 0 && this.getArgumentValue("out").length != 0 && this.getArgumentValue("steg").length != 0) {
@@ -127,7 +132,7 @@ public class ArgumentsParser {
 
     }
 
-    private void setEncoderFromArgs() throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private void setEncoderFromArgs() throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchPaddingException {
         if(this.containsArg("pass")) {
             this.encodeMode = true;
             String encodeMode = "AES"; // aes128 en modo CBC por default.
@@ -172,10 +177,11 @@ public class ArgumentsParser {
             switch (encodeMode){
                 case "AES":{
                     SecretKey keyForAes = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES",password, "salt",keyLen);
-                    this.encoder = new AESEncoder("AES/"+blocksMode+"/PKCS5Padding",fileToEncrypt.getPath(),"aes",keyForAes,AESEncoder.generateIv());
+                    this.encoder = new AESEncoder("AES/"+blocksMode+"/PKCS5Padding",fileToEncrypt.getPath(),"src/main/resources/encriptadoBasura.bmp",keyForAes,AESEncoder.generateIv());
                 }
                 case "DES":{
-                    //TODO cuando este lo de los bloques para des!!
+                    SecretKey keyForDes = SecretKeyFactory.getInstance("DES").generateSecret(new DESKeySpec(password.getBytes()));
+                    this.encoder = new DESEncoder("DES/" + blocksMode+"/PKCS5Padding" ,fileToEncrypt.getPath(), "src/main/resources/encriptadoBasura.bmp", keyForDes);
                 }
             }
         }

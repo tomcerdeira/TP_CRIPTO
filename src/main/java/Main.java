@@ -1,16 +1,19 @@
 import exceptions.FileTooLargetException;
 
+import javax.crypto.NoSuchPaddingException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 
 public class Main {
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException{
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException {
         ArgumentsParser argsParser = new ArgumentsParser(args);
         FileInputStream f1 = new FileInputStream(argsParser.fileToEncrypt);
 
