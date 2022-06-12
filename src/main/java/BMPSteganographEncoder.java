@@ -37,7 +37,7 @@ public class BMPSteganographEncoder {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(editor.getCoverImageBytes(), 0, 54);
         outputStream.write(len);
-        outputStream.write(editor.getCoverImageBytes(), 58, editor.getCoverImageBytes().length-58);
+        outputStream.write(editor.getCoverImageBytes(), 54+32, editor.getCoverImageBytes().length-(54+32));
         outputStream.write(extension.getBytes(StandardCharsets.UTF_8));
 
         editor.setBytes(outputStream.toByteArray());
@@ -62,11 +62,27 @@ public class BMPSteganographEncoder {
 
     public static byte[] revertLSB1(byte[] aux) throws IOException {
         byte[] image = aux;
+
         // Obtenemos los bytes del largo de la data que se escondio en la imagen portadora
         byte[] len = new byte[4] ;
-        for (int i=54 , j=0; i<58; i++, j++){
-            len[j]=image[i];
+        StringBuilder byteBuilderForLength = new StringBuilder();
+        int index = 0;
+        for (int i=54 , j=0; i<54+32; i++){
+
+            // Leemos un byte de la imagen y nos quedamos con su ultimo bit
+            byte b = image[i];
+            int lastBit = b & 1;
+            byteBuilderForLength.append(lastBit);
+            if(j==7){
+                /// Despues de armar un byte en string, lo transformamos a un tipo byte. OBS hay que usarlo reverse ya que estamos trabajando en LITTLE_ENDIAN
+                len[index++] = (byte)Integer.parseInt(byteBuilderForLength.reverse().toString(), 2);
+                byteBuilderForLength = new StringBuilder();
+                j=0;
+            }else {
+                j++;
+            }
         }
+
         // Transformamos esos bytes a un int para facilitar su lecutra
         int encodedDataLength= new BigInteger(len).intValue();
         System.out.println(encodedDataLength+"A A");
@@ -75,11 +91,11 @@ public class BMPSteganographEncoder {
 
         StringBuilder byteBuilder = new StringBuilder();
         // Offset para excluir headers y tamano de la data escondida
-        int offset = 58;
+        int offset = 54+32;
         // Instanciamos el vector que vamos a guardar lo que extraemos
         byte[] desencondedData = new byte[encodedDataLength];
 
-        int index =0;
+        int index2 =0;
         int j = 0;
         for (int i = 0 ; i<cantBitsToRead; i++){
             // Leemos un byte de la imagen y nos quedamos con su ultimo bit
@@ -88,7 +104,7 @@ public class BMPSteganographEncoder {
              byteBuilder.append(lastBit);
              if(j==7){
                  /// Despues de armar un byte en string, lo transformamos a un tipo byte. OBS hay que usarlo reverse ya que estamos trabajando en LITTLE_ENDIAN
-                 desencondedData[index++] = (byte)Integer.parseInt(byteBuilder.reverse().toString(), 2);
+                 desencondedData[index2++] = (byte)Integer.parseInt(byteBuilder.reverse().toString(), 2);
                  byteBuilder = new StringBuilder();
                  j=0;
              }else {

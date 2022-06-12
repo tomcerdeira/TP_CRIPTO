@@ -49,15 +49,19 @@ public class Main {
                             argsParser.encoder.decryptFile(argsParser.outputFile.getPath(), "SALIDA_LSB1_REVERT_MODE.bmp");
                         }
 
-                        byte[] forExtension = new FileInputStream(argsParser.fileCarrier).readAllBytes();
+                        byte[] forExtension = desencoded;
                         StringBuilder fileExtension = new StringBuilder();
-                        for (int i=forExtension.length-2; forExtension[i]!='.'; i--){
+                        int i = forExtension.length-1;
+                        for (; forExtension[i]!='.'; i--){
                             fileExtension.append((char)forExtension[i]);
+                        }
+                        for (int j=i; j>= i-10; j--){
+                            fileExtension.append((char)forExtension[j]);
                         }
                         String extensionOfFile = fileExtension.append('.').reverse().toString();
 
                         System.out.println(argsParser.outputFile + extensionOfFile);
-                        FileOutputStream outputStreamLSB1 = new FileOutputStream(argsParser.outputFile + extensionOfFile);
+                        FileOutputStream outputStreamLSB1 = new FileOutputStream(argsParser.outputFile);
                         outputStreamLSB1.write(desencoded);
                         outputStreamLSB1.close();
 
