@@ -34,8 +34,6 @@ public class Main {
             arr = f2.readAllBytes();
         }
 
-        BufferedImage bufferedImage = ImageIO.read(new File(argsParser.fileCarrier.getAbsolutePath()));
-        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr, extension);
 
         try {
             switch (argsParser.stegMode){
@@ -63,6 +61,9 @@ public class Main {
                         outputStreamLSB1.close();
 
                     }else {
+                        BufferedImage bufferedImage = ImageIO.read(new File(argsParser.fileCarrier.getAbsolutePath()));
+                        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr, extension);
+
                         System.out.println("-embed");
 
                         steganograph.LSB1();
@@ -91,11 +92,14 @@ public class Main {
                         String extensionOfFile = fileExtension.append('.').reverse().toString();
 
                         System.out.println( extensionOfFile);
-                        FileOutputStream outputStreamLSB4 = new FileOutputStream(argsParser.outputFile+extensionOfFile);
+                        FileOutputStream outputStreamLSB4 = new FileOutputStream(argsParser.outputFile);
                         outputStreamLSB4.write(desencodedLSB4);
                         outputStreamLSB4.close();
 
                     }else{
+                        BufferedImage bufferedImage = ImageIO.read(new File(argsParser.fileCarrier.getAbsolutePath()));
+                        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr, extension);
+
                         System.out.println("-embed");
                         steganograph.LSB4();
                         FileOutputStream outputStream = new FileOutputStream(argsParser.outputFile);
@@ -105,6 +109,9 @@ public class Main {
                     }
                     break;
                 case "LSBI":
+                    BufferedImage bufferedImage = ImageIO.read(new File(argsParser.fileCarrier.getAbsolutePath()));
+                    BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr, extension);
+
                     steganograph.LSBImproved();
                     break;
                 default:

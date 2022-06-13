@@ -29,18 +29,24 @@ public class BMPSteganographEncoder {
         editor = new BMPEditor(inputBMP);
         originalImage = inputBMP;
 
+        StringBuilder byteBuilderForInvertingBytes = new StringBuilder();
 
-        this.encodingBytes = encodingBytes;
         // Agreamos al principio los bytes de tamaño y al final la extension TODO REVISAR
         byte[] len = ByteBuffer.allocate(4).putInt(encodingBytes.length).array();
+        byte [] encodeAux = new byte[4+ encodingBytes.length + extension.getBytes(StandardCharsets.UTF_8).length];
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(editor.getCoverImageBytes(), 0, 54);
-        outputStream.write(len);
-        outputStream.write(editor.getCoverImageBytes(), 54+32, editor.getCoverImageBytes().length-(54+32));
-        outputStream.write(extension.getBytes(StandardCharsets.UTF_8));
+        byte[] aux = new byte[encodingBytes.length];
+        System.out.println(encodingBytes.length+" LEN");
 
-        editor.setBytes(outputStream.toByteArray());
+        System.arraycopy(len, 0, encodeAux, 0, 4);
+        System.arraycopy(encodingBytes, 0, encodeAux, 5, aux.length);
+
+        for(int i= encodingBytes.length+4,j=0; j<extension.getBytes(StandardCharsets.UTF_8).length;j++,i++){
+            encodeAux[i] = extension.getBytes(StandardCharsets.UTF_8)[j];
+        }
+
+        this.encodingBytes = encodeAux;
+
         System.out.println(maxHiddenFileSize(editor));
     }
 
@@ -85,6 +91,7 @@ public class BMPSteganographEncoder {
 
         // Transformamos esos bytes a un int para facilitar su lecutra
         int encodedDataLength= new BigInteger(len).intValue() + 4; // LE agremos 4 bytes mas para leer la extension al final del archivo
+        System.out.println(encodedDataLength-4);
         // Calculamos la cantidad de bytes de la imagen portadora a leer para obtener la data. Como es LSB1, deben leerse 8 bytes de la portadora para obtener 1 byte de la data escondida
         int cantBitsToRead = encodedDataLength * 8;
 

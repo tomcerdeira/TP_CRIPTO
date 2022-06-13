@@ -61,7 +61,7 @@ public class BMPEditor {
         if(!verifyBitsPerPixel())
             throw new BitsPerPixelException();
 
-        bitArrayOffset = getIntValue(BIT_ARRAY_OFFSET) + 4; //TODO CORREGIR CONSTANTE PARA QUE SEA 58
+        bitArrayOffset = getIntValue(BIT_ARRAY_OFFSET); //TODO CORREGIR CONSTANTE PARA QUE SEA 58
         System.out.println(bitArrayOffset);
         bitArraySize = bytes.length - bitArrayOffset;
 
