@@ -92,7 +92,7 @@ public class Main {
                         String extensionOfFile = fileExtension.append('.').reverse().toString();
 
                         System.out.println( extensionOfFile);
-                        FileOutputStream outputStreamLSB4 = new FileOutputStream(argsParser.outputFile);
+                        FileOutputStream outputStreamLSB4 = new FileOutputStream(argsParser.outputFile+extensionOfFile);
                         outputStreamLSB4.write(desencodedLSB4);
                         outputStreamLSB4.close();
 

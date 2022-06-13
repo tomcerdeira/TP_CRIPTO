@@ -80,19 +80,14 @@ public class BMPSteganographEncoder {
                encodeByte <<= 1;
                bit >>=7;
                if (bit == 0){
-                   if (image[indexImage] % 2 == 0){
-                       continue;
-                   }else{
+                   if (image[indexImage] % 2 != 0){
                        image[indexImage] -= 1;
                    }
                }else{
-                   if (image[indexImage] % 2 != 0){
-                       continue;
-                   }else{
+                   if (image[indexImage] % 2 == 0){
                        image[indexImage] += 1;
                    }
                }
-//               image[indexImage] = (byte) ((image[indexImage] & 0x7F ) | bit);
            }
         }
 
@@ -161,12 +156,31 @@ public class BMPSteganographEncoder {
         if( (encodingBytes.length * 2) > editor.getBitArraySize())
             throw new FileTooLargetException(Integer.toString(editor.getBitArraySize() / 2));
 
-        ByteIterator iterator = editor.byteIterator();
+        byte[] image = this.editor.getCoverImageBytes();
+        byte [] encodeData = this.encodingBytes;
+        int indexImage = 54;
 
-        for(byte b : encodingBytes) {
-            iterator.NextSetLeastSignificantBits(b, 4);
-            iterator.NextSetLeastSignificantBits((byte)(b>>4), 4);
+        for(int i=0;i<encodeData.length;i++){
+            int encodeByte = encodeData[i];
+            for (int j=0;j<2;j++,indexImage++){
+                for(int k=0;k<4;k++) {
+                    byte val = getBit((byte) encodeByte, 7 - k);
+                    image[indexImage] = setBit(image[indexImage], 3 - k, val);
+                }
+                encodeByte <<= 4;
+            }
         }
+
+        this.editor.setBytes(image);
+    }
+
+    private byte getBit(byte num,int pos){
+        return (byte) ((num >> pos) & 1); // 0 menos significativo, 7 mas significativo
+    }
+
+    private byte setBit(byte num,int pos, byte value){
+         return (byte) ((num & ~(1 << pos)) | (value << pos));
+
     }
 
     public static byte[] revertLSB4(byte[] aux1) throws IOException {
