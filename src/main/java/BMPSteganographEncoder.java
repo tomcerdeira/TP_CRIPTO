@@ -39,7 +39,7 @@ public class BMPSteganographEncoder {
         System.out.println(encodingBytes.length+" LEN");
 
         System.arraycopy(len, 0, encodeAux, 0, 4);
-        System.arraycopy(encodingBytes, 0, encodeAux, 5, aux.length);
+        System.arraycopy(encodingBytes, 0, encodeAux, 4, encodingBytes.length);
 
         for(int i= encodingBytes.length+4,j=0; j<extension.getBytes(StandardCharsets.UTF_8).length;j++,i++){
             encodeAux[i] = extension.getBytes(StandardCharsets.UTF_8)[j];
@@ -50,19 +50,53 @@ public class BMPSteganographEncoder {
         System.out.println(maxHiddenFileSize(editor));
     }
 
+//    public void LSB1() throws FileTooLargetException {
+//        if( (encodingBytes.length * 8) > editor.getBitArraySize())
+//            throw new FileTooLargetException(Integer.toString(editor.getBitArraySize() / 8));
+//        ByteIterator iterator = editor.byteIterator();
+//        byte currentByte;
+//
+//        for(byte b : encodingBytes) {
+//            currentByte = b;
+//            for (int i = 0; i <8; i++) {
+//                iterator.NextSetLeastSignificantBits(currentByte, 1);
+//                currentByte >>= 1;
+//            }
+//        }
+//    }
+
     public void LSB1() throws FileTooLargetException {
         if( (encodingBytes.length * 8) > editor.getBitArraySize())
             throw new FileTooLargetException(Integer.toString(editor.getBitArraySize() / 8));
-        ByteIterator iterator = editor.byteIterator();
-        byte currentByte;
 
-        for(byte b : encodingBytes) {
-            currentByte = b;
-            for (int i = 0; i < 8; i++) {
-                iterator.NextSetLeastSignificantBits(currentByte, 1);
-                currentByte >>= 1;
-            }
+        byte[] image = this.editor.getCoverImageBytes();
+        byte [] encodeData = this.encodingBytes;
+        int indexImage = 54;
+
+        for(int i=0;i<encodeData.length;i++){
+           int encodeByte = encodeData[i];
+           for (int j=0;j<8;j++,indexImage++){
+               int bit = encodeByte & 0x80;
+               encodeByte <<= 1;
+               bit >>=7;
+               if (bit == 0){
+                   if (image[indexImage] % 2 == 0){
+                       continue;
+                   }else{
+                       image[indexImage] -= 1;
+                   }
+               }else{
+                   if (image[indexImage] % 2 != 0){
+                       continue;
+                   }else{
+                       image[indexImage] += 1;
+                   }
+               }
+//               image[indexImage] = (byte) ((image[indexImage] & 0x7F ) | bit);
+           }
         }
+
+        this.editor.setBytes(image);
     }
 
 

@@ -61,8 +61,7 @@ public class BMPEditor {
         if(!verifyBitsPerPixel())
             throw new BitsPerPixelException();
 
-        bitArrayOffset = getIntValue(BIT_ARRAY_OFFSET); //TODO CORREGIR CONSTANTE PARA QUE SEA 58
-        System.out.println(bitArrayOffset);
+        bitArrayOffset = getIntValue(BIT_ARRAY_OFFSET);
         bitArraySize = bytes.length - bitArrayOffset;
 
         // Since no compression method is used Bitmap_Width == Image_Width
