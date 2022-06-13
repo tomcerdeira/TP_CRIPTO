@@ -55,13 +55,10 @@ public class Main {
                         for (; forExtension[i]!='.'; i--){
                             fileExtension.append((char)forExtension[i]);
                         }
-                        for (int j=i; j>= i-10; j--){
-                            fileExtension.append((char)forExtension[j]);
-                        }
-                        String extensionOfFile = fileExtension.append('.').reverse().toString();
 
+                        String extensionOfFile = fileExtension.append('.').reverse().toString();
                         System.out.println(argsParser.outputFile + extensionOfFile);
-                        FileOutputStream outputStreamLSB1 = new FileOutputStream(argsParser.outputFile);
+                        FileOutputStream outputStreamLSB1 = new FileOutputStream(argsParser.outputFile + extensionOfFile);
                         outputStreamLSB1.write(desencoded);
                         outputStreamLSB1.close();
 

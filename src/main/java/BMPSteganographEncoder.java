@@ -29,8 +29,8 @@ public class BMPSteganographEncoder {
         editor = new BMPEditor(inputBMP);
         originalImage = inputBMP;
 
-        this.encodingBytes = encodingBytes;
 
+        this.encodingBytes = encodingBytes;
         // Agreamos al principio los bytes de tamaño y al final la extension TODO REVISAR
         byte[] len = ByteBuffer.allocate(4).putInt(encodingBytes.length).array();
 
@@ -67,7 +67,7 @@ public class BMPSteganographEncoder {
         byte[] len = new byte[4] ;
         StringBuilder byteBuilderForLength = new StringBuilder();
         int index = 0;
-        for (int i=54 , j=0; i<54+32; i++){
+        for (int i=54 , j=0; i<54+32; i++){ // La condicion de corte es desde los headers hasta obtener los 4 bytes del largo del archivo
 
             // Leemos un byte de la imagen y nos quedamos con su ultimo bit
             byte b = image[i];
@@ -75,7 +75,7 @@ public class BMPSteganographEncoder {
             byteBuilderForLength.append(lastBit);
             if(j==7){
                 /// Despues de armar un byte en string, lo transformamos a un tipo byte. OBS hay que usarlo reverse ya que estamos trabajando en LITTLE_ENDIAN
-                len[index++] = (byte)Integer.parseInt(byteBuilderForLength.reverse().toString(), 2);
+                len[index++] = (byte)Integer.parseInt(byteBuilderForLength.toString(), 2);
                 byteBuilderForLength = new StringBuilder();
                 j=0;
             }else {
@@ -84,8 +84,7 @@ public class BMPSteganographEncoder {
         }
 
         // Transformamos esos bytes a un int para facilitar su lecutra
-        int encodedDataLength= new BigInteger(len).intValue();
-        System.out.println(encodedDataLength+"A A");
+        int encodedDataLength= new BigInteger(len).intValue() + 4; // LE agremos 4 bytes mas para leer la extension al final del archivo
         // Calculamos la cantidad de bytes de la imagen portadora a leer para obtener la data. Como es LSB1, deben leerse 8 bytes de la portadora para obtener 1 byte de la data escondida
         int cantBitsToRead = encodedDataLength * 8;
 
@@ -104,7 +103,8 @@ public class BMPSteganographEncoder {
              byteBuilder.append(lastBit);
              if(j==7){
                  /// Despues de armar un byte en string, lo transformamos a un tipo byte. OBS hay que usarlo reverse ya que estamos trabajando en LITTLE_ENDIAN
-                 desencondedData[index2++] = (byte)Integer.parseInt(byteBuilder.reverse().toString(), 2);
+//                 desencondedData[index2++] = Byte.parseByte(byteBuilder.reverse().toString(),2);
+                 desencondedData[index2++] = (byte)Integer.parseInt(byteBuilder.toString(), 2);
                  byteBuilder = new StringBuilder();
                  j=0;
              }else {
