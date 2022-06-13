@@ -83,15 +83,15 @@ public class Main {
                             argsParser.encoder.decryptFile("desencodedLSB4.bmp", "aesDesLSB4.bmp");
                         }
 
-                        byte[] forExtension = new FileInputStream(argsParser.fileCarrier).readAllBytes();
+                        byte[] forExtension = desencodedLSB4;
                         StringBuilder fileExtension = new StringBuilder();
-                        for (int i=forExtension.length-2; forExtension[i]!='.'; i--){
+                        for (int i=forExtension.length-1; forExtension[i]!='.'; i--){
                             fileExtension.append((char)forExtension[i]);
                         }
                         String extensionOfFile = fileExtension.append('.').reverse().toString();
 
-                        System.out.println(argsParser.outputFile + extensionOfFile);
-                        FileOutputStream outputStreamLSB4 = new FileOutputStream(argsParser.outputFile + extensionOfFile);
+                        System.out.println( extensionOfFile);
+                        FileOutputStream outputStreamLSB4 = new FileOutputStream(argsParser.outputFile+extensionOfFile);
                         outputStreamLSB4.write(desencodedLSB4);
                         outputStreamLSB4.close();
 
