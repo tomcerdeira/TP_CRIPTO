@@ -3,140 +3,93 @@ import exceptions.FileTooLargetException;
 import javax.crypto.NoSuchPaddingException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Objects;
 
 public class Main {
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException {
+
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException, FileTooLargetException {
 
         ArgumentsParser argsParser = new ArgumentsParser(args);
 
-        byte[] arr = new byte[1];
+        byte[] arr = getByteArrayDataToHide(argsParser) ;
         String extension = "";
 
-        if(!argsParser.revertMode) {
-            FileInputStream f1 = new FileInputStream(argsParser.fileToEncrypt);
-            arr = f1.readAllBytes();
-            int extensionIndex = argsParser.fileToEncrypt.toString().lastIndexOf('.');
-            extension = "." + argsParser.fileToEncrypt.toString().substring(extensionIndex+1) + "\0";
-        }
-
-        if(argsParser.encodeMode) {
-            argsParser.encoder.encryptFile(argsParser.fileToEncrypt.getAbsolutePath(),"encryptedFile");
-            FileInputStream f2 = new FileInputStream(argsParser.encoder.getEncryptedFile());
-            arr = f2.readAllBytes();
-        }
-
-
-        try {
-            switch (argsParser.stegMode){
+        if (argsParser.revertMode) {
+            byte desencoded[] = new byte[0];
+            FileInputStream f3 = new FileInputStream(argsParser.fileCarrier);
+            switch (argsParser.stegMode) {
                 case "LSB1":
-                    if(argsParser.revertMode){
-
-                        System.out.println("-extract");
-                        FileInputStream f3 = new FileInputStream(argsParser.fileCarrier);
-                        byte[] desencoded = BMPSteganographEncoder.revertLSB1(f3.readAllBytes());
-                        if(argsParser.encodeMode) {
-                            argsParser.encoder.decryptFile(argsParser.outputFile.getPath(), "SALIDA_LSB1_REVERT_MODE.bmp");
-                        }
-
-                        byte[] forExtension = desencoded;
-                        StringBuilder fileExtension = new StringBuilder();
-                        int i = forExtension.length-1;
-                        for (; forExtension[i]!='.'; i--){
-                            fileExtension.append((char)forExtension[i]);
-                        }
-
-                        String extensionOfFile = fileExtension.append('.').reverse().toString();
-                        System.out.println(argsParser.outputFile + extensionOfFile);
-                        FileOutputStream outputStreamLSB1 = new FileOutputStream(argsParser.outputFile + extensionOfFile);
-                        outputStreamLSB1.write(desencoded);
-                        outputStreamLSB1.close();
-
-                    }else {
-                        BufferedImage bufferedImage = ImageIO.read(new File(argsParser.fileCarrier.getAbsolutePath()));
-                        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr, extension);
-
-                        System.out.println("-embed");
-
-                        steganograph.LSB1();
-                        FileOutputStream outputStream = new FileOutputStream(argsParser.outputFile);
-                        byte[] aux = steganograph.getEditor().getCoverImageBytes();
-                        outputStream.write(aux);
-                        outputStream.close();
-
-                    }
+                    desencoded = BMPSteganographEncoder.revertLSB1(f3.readAllBytes());
                     break;
                 case "LSB4":
-                    if(argsParser.revertMode) {
-                        System.out.println("-extract");
-                        FileInputStream f3 = new FileInputStream(argsParser.fileCarrier);
-                        byte[] desencodedLSB4 = BMPSteganographEncoder.revertLSB4(f3.readAllBytes());
-
-                        if(argsParser.encodeMode) {
-                            argsParser.encoder.decryptFile("desencodedLSB4.bmp", "aesDesLSB4.bmp");
-                        }
-
-                        byte[] forExtension = desencodedLSB4;
-                        StringBuilder fileExtension = new StringBuilder();
-                        for (int i=forExtension.length-1; forExtension[i]!='.'; i--){
-                            fileExtension.append((char)forExtension[i]);
-                        }
-                        String extensionOfFile = fileExtension.append('.').reverse().toString();
-
-                        System.out.println( extensionOfFile);
-                        FileOutputStream outputStreamLSB4 = new FileOutputStream(argsParser.outputFile+extensionOfFile);
-                        outputStreamLSB4.write(desencodedLSB4);
-                        outputStreamLSB4.close();
-
-                    }else{
-                        BufferedImage bufferedImage = ImageIO.read(new File(argsParser.fileCarrier.getAbsolutePath()));
-                        BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr, extension);
-
-                        System.out.println("-embed");
-                        steganograph.LSB4();
-                        FileOutputStream outputStream = new FileOutputStream(argsParser.outputFile);
-                        byte[] aux = steganograph.getEditor().getCoverImageBytes();
-                        outputStream.write(aux);
-                        outputStream.close();
-                    }
+                    desencoded = BMPSteganographEncoder.revertLSB4(f3.readAllBytes());
                     break;
                 case "LSBI":
-                    BufferedImage bufferedImage = ImageIO.read(new File(argsParser.fileCarrier.getAbsolutePath()));
-                    BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr, extension);
-
+//                        desencoded = BMPSteganographEncoder.revertLSBI(f3.readAllBytes());///TODO
+                    break;
+            }
+            String auxFileToDescrypt = "auxiliarFileToDesencrypt";
+            String extensionOfFile = getExtension(desencoded);
+            if (argsParser.encodeMode) {
+                generateFileFromByteArray(desencoded, auxFileToDescrypt);
+                argsParser.encoder.decryptFile(auxFileToDescrypt, argsParser.outputFile.getAbsolutePath() + extensionOfFile);
+            } else {
+                generateFileFromByteArray(desencoded, argsParser.outputFile.getAbsolutePath() + extensionOfFile);
+            }
+        } else{
+            int extensionIndex = argsParser.fileToEncrypt.toString().lastIndexOf('.');
+            extension = "." + argsParser.fileToEncrypt.toString().substring(extensionIndex+1) + "\0";
+            BufferedImage bufferedImage = ImageIO.read(new File(argsParser.fileCarrier.getAbsolutePath()));
+            BMPSteganographEncoder steganograph = new BMPSteganographEncoder(bufferedImage, arr, extension);
+            switch (argsParser.stegMode) {
+                case "LSB1":
+                    steganograph.LSB1();
+                    break;
+                case "LSB4":
+                    steganograph.LSB4();
+                    break;
+                case "LSBI":
                     steganograph.LSBImproved();
                     break;
-                default:
-                    System.out.println("SIN STEGMODE");
             }
-//            steganograph.getEditor().outputToFile(argsParser.outputFile.getPath());
-        } catch (FileTooLargetException e) {
-            e.printStackTrace();
+            generateFileFromByteArray(steganograph.getEditor().getCoverImageBytes(),argsParser.outputFile.getAbsolutePath());
         }
 
-        ////////////////////////// Para DES
+    }
+    private static byte[] getByteArrayDataToHide(ArgumentsParser argumentsParser) throws IOException {
+        if (argumentsParser.encodeMode && !argumentsParser.revertMode) {
+            argumentsParser.encoder.encryptFile(argumentsParser.fileToEncrypt.getAbsolutePath(), "encryptedFile");
+            FileInputStream f2 = new FileInputStream("encryptedFile");
+            return f2.readAllBytes();
+        }
 
-//        String passwordForDes = "password";
-//        SecretKey keyForDes = SecretKeyFactory.getInstance("DES").generateSecret(new DESKeySpec(passwordForDes.getBytes()));
-//
-//        DESEncoder desEncoder = new DESEncoder("DES/CFB/PKCS5Padding" ,"src/main/resources/medianoche1.bmp", "src/main/resources/SALIDA.bmp", keyForDes);
-//
-//        // Test Encrypt
-//        desEncoder.encryptFile();
-//
-//        // Test Decrypt
-//        desEncoder.decryptFile("src/main/resources/SALIDA.bmp", "src/main/resources/medianoche2.bmp");
-
+        if (!argumentsParser.revertMode) {
+            FileInputStream f1 = new FileInputStream(argumentsParser.fileToEncrypt);
+            return f1.readAllBytes();
+        }
+        return null;
     }
 
+    private static String getExtension(byte[] desencoded){
+        byte[] forExtension = desencoded;
+        StringBuilder fileExtension = new StringBuilder();
+        int i = forExtension.length-1;
+        for (; forExtension[i]!='.'; i--){
+            fileExtension.append((char)forExtension[i]);
+        }
+        return fileExtension.append('.').reverse().toString();
+    }
+
+    private static void generateFileFromByteArray(byte[] array, String fileName) throws IOException {
+        System.out.println("GENERATE"+ fileName);
+        FileOutputStream outputStreamLSB1 = new FileOutputStream(fileName);
+        outputStreamLSB1.write(array);
+        outputStreamLSB1.close();
+    }
 }
 
 // -embed -in C:/Users/Tomas/Documents/ITBA/Cripto/TP/TP_CRIPTO/src/main/resources/kings.bmp -p kings.bmp -out out -steg LSB1 -pass hola
