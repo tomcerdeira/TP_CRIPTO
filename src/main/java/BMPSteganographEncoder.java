@@ -174,70 +174,90 @@ public class BMPSteganographEncoder {
         this.editor.setBytes(image);
     }
 
-    private byte getBit(byte num,int pos){
+    private static byte getBit(byte num,int pos){
         return (byte) ((num >> pos) & 1); // 0 menos significativo, 7 mas significativo
     }
 
-    private byte setBit(byte num,int pos, byte value){
+    private static byte setBit(byte num,int pos, byte value){
          return (byte) ((num & ~(1 << pos)) | (value << pos));
 
     }
 
-    public static byte[] revertLSB4(byte[] aux1) throws IOException {
-        byte[] image = aux1;
-        // Obtenemos los bytes del largo de la data que se escondio en la imagen portadora
-        byte[] len = new byte[4] ;
-        int indexLen = 0;
-        StringBuilder lenBuilder = new StringBuilder();
-        for (int i = 54,j=0 ; i<54+8; i++){ // + 8 es por que tenemos que obtener 4 bytes, y como de cada byte de la imagen portadora leemos 4 bits --> hay que leer 8 bytes de la portadora
-            // Leemos un byte de la imagen
-            byte b = image[i];
+    // TODO: hacer funcion que retorne la extension del archivo escondido
 
-            StringBuilder aux = new StringBuilder();
-            for(int dec = 0; dec < 4; dec++){ // Itero decalando los bits del byte de la imagen portadora obteniendo los 4 bits menos relevantes
-                int lastBit = b & 1;
-                aux.append(lastBit);
-                b = (byte) (b>>1);
+    private static final int END_OF_HEADER_INDEX = 54;
+    private static final int FILE_EXTENSION_LENGTH = 4;
+    private static final int BYTES_OF_LENGTH_LSB4 = 8;
+
+
+    private static int getLengthOfEncodedData_LSB4(byte[] image){
+
+        byte[] reconstructionOfByteInBytes = new byte[4];
+        StringBuilder lenBuilder = new StringBuilder();
+        int indexLen = 0;
+
+        for (int currentIndex = END_OF_HEADER_INDEX, j=0 ; currentIndex < END_OF_HEADER_INDEX + BYTES_OF_LENGTH_LSB4; currentIndex++){
+
+            byte currentByte = image[currentIndex];
+
+            StringBuilder reconstructionOfByteInString = new StringBuilder();
+
+            for(int dec = 0; dec < 4; dec++){
+                reconstructionOfByteInString.append(BMPSteganographEncoder.getBit(currentByte, 3));
+                currentByte = (byte) (currentByte<<1); // decalo los bits 4 veces para obtener los primeros 4 bits del byte
             }
-            lenBuilder.append(aux.reverse());
-            if(j==1){
-                /// Despues de armar un byte en string, lo transformamos a un tipo byte. OBS hay que usarlo reverse ya que estamos trabajando en LITTLE_ENDIAN
-                len[indexLen++] = (byte)Integer.parseInt(lenBuilder.toString(), 2);
-                lenBuilder = new StringBuilder();
-                j=0;
-            }else {
-                j++;
-            }
+
+            lenBuilder.append(reconstructionOfByteInString);
+
+           if(j==1){
+               reconstructionOfByteInBytes[indexLen++] = (byte)Integer.parseInt(lenBuilder.toString(), 2);
+               lenBuilder = new StringBuilder();
+               j=0;
+           }else {
+               j++;
+           }
+
         }
 
-        // Transformamos esos bytes a un int para facilitar su lecutra
-        int encodedDataLength= new BigInteger(len).intValue()+4; //TODO resolver este magic number, es para obtener 4 bytes mas de donde sacar la extension
-        System.out.println(encodedDataLength);
-        // Calculamos la cantidad de bytes de la imagen portadora a leer para obtener la data. Como es LSB4, deben leerse 2 bytes de la portadora para obtener 1 byte de la data escondida
-        int cantBitsToRead = encodedDataLength * 2;
+        return new BigInteger(reconstructionOfByteInBytes).intValue() + FILE_EXTENSION_LENGTH;
+
+    }
+
+    public static byte[] revertLSB4(byte[] inputImageBytes) {
+
+        byte[] image = inputImageBytes;
+
+        int encodedDataLength = BMPSteganographEncoder.getLengthOfEncodedData_LSB4(image);
+
+        System.out.println(encodedDataLength); // TODO: BORRAR
+
+        int cantBytesOfImageForOneOfData = 2;
+        int cantBitsToRead = encodedDataLength * cantBytesOfImageForOneOfData;
 
         StringBuilder byteBuilder = new StringBuilder();
-        // Offset para excluir headers y tamano de la data escondida
-        int offset = 54+8;
-        // Instanciamos el vector que vamos a guardar lo que extraemos
-        byte[] desencondedData = new byte[encodedDataLength];
 
-        int index =0;
-        int j = 0;
-        for (int i = 0 ; i<cantBitsToRead; i++){
-            // Leemos un byte de la imagen y nos quedamos con su ultimo bit
-            byte b = image[offset + i];
+        int offset = END_OF_HEADER_INDEX + BYTES_OF_LENGTH_LSB4;
 
-            StringBuilder aux = new StringBuilder();
-            for(int dec = 0; dec < 4; dec++){ // Itero decalando los bits del byte de la imagen portadora obteniendo los 4 bits relevantes
-                int lastBit = b & 1;
-                aux.append(lastBit);
-                b = (byte) (b>>1);
+        byte[] desencodedData = new byte[encodedDataLength];
+
+        int desencodedDataIndex = 0;
+        int j = 0; // TODO: explicar que es este indice
+
+        for (int currentIndex = 0 ; currentIndex < cantBitsToRead; currentIndex++){
+
+            byte currentByte = image[offset + currentIndex];
+
+            StringBuilder reconstructionOfDataByteInString = new StringBuilder();
+
+            for(int dec = 0; dec < 4; dec++){
+                reconstructionOfDataByteInString.append(BMPSteganographEncoder.getBit(currentByte, 3));
+                currentByte = (byte) (currentByte<<1); // decalo los bits 4 veces para obtener los primeros 4 bits del byte
             }
-            byteBuilder.append(aux.reverse());
+            byteBuilder.append(reconstructionOfDataByteInString);
+
             if(j==1){
                 /// Despues de armar un byte en string, lo transformamos a un tipo byte. OBS hay que usarlo reverse ya que estamos trabajando en LITTLE_ENDIAN
-                desencondedData[index++] = (byte)Integer.parseInt(byteBuilder.toString(), 2);
+                desencodedData[desencodedDataIndex++] = (byte)Integer.parseInt(byteBuilder.toString(), 2);
                 byteBuilder = new StringBuilder();
                 j=0;
             }else {
@@ -245,7 +265,7 @@ public class BMPSteganographEncoder {
             }
         }
 
-        return desencondedData;
+        return desencodedData;
 
     }
 
