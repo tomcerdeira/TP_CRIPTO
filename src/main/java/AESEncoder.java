@@ -8,6 +8,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 
 public class AESEncoder implements Encoder{
@@ -59,7 +60,17 @@ public class AESEncoder implements Encoder{
             }else{
                 cipher.init(Cipher.ENCRYPT_MODE, key, iv);
             }
-            encryptOrDecrypt(cipher,inputFilePath,outPutFilePath);
+
+            FileInputStream inputStream = new FileInputStream(inputFilePath);
+            FileOutputStream outputStream = new FileOutputStream(outPutFilePath);
+
+            byte[] fileBytes = inputStream.readAllBytes();
+            byte[] transformedBytes = cipher.doFinal(fileBytes);
+
+            if (transformedBytes != null) {
+                outputStream.write(transformedBytes);
+            }
+
         } catch (IOException | NoSuchPaddingException |
                 NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException |
                 BadPaddingException | IllegalBlockSizeException e) {
@@ -79,7 +90,16 @@ public class AESEncoder implements Encoder{
             }else{
                 cipher.init(Cipher.DECRYPT_MODE, key, iv);
             }
-            encryptOrDecrypt(cipher,inputFilePath,outPutFilePath);
+
+            FileInputStream inputStream = new FileInputStream(inputFilePath);
+            FileOutputStream outputStream = new FileOutputStream(outPutFilePath);
+
+            byte[] fileBytes = inputStream.readAllBytes();
+            byte[] transformedBytes = cipher.doFinal(fileBytes);
+
+            if (transformedBytes != null) {
+                outputStream.write(transformedBytes);
+            }
         } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
             throw new RuntimeException();
@@ -88,6 +108,6 @@ public class AESEncoder implements Encoder{
 
     @Override
     public File getEncryptedFile(){
-        return null;
+        return encryptedFile;
     }
 }

@@ -1,12 +1,17 @@
+import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
@@ -179,11 +184,12 @@ public class ArgumentsParser {
             switch (encodeMode){
                 case "AES":{
                     // TODO REVISAR GENRACION DE CLAVE NO SE PUEDE USAR SALT!!
-                    SecretKey keyForAes = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES",password, "salt",keyLen);
-                    if(fileToEncrypt == null){
-                        fileToEncrypt = fileCarrier;
-                    }
-                    this.encoder = new AESEncoder("AES/"+blocksMode+"/PKCS5Padding",keyForAes,AESEncoder.generateIv());
+                    KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+                    keyGen.init(keyLen);
+                    byte[][] keyAndIV = EVPBytesToKeyAndIv(1, password.getBytes(StandardCharsets.UTF_8), keyLen/8, 16);
+                    byte[] keyArr = keyAndIV[0];
+                    SecretKey key = new SecretKeySpec(keyArr, "AES");
+                    this.encoder = new AESEncoder("AES/"+blocksMode+"/PKCS5Padding",key,new IvParameterSpec(keyAndIV[1]));
                     break;
                 }
                 case "DES":{
@@ -209,5 +215,50 @@ public class ArgumentsParser {
                 throw new IllegalArgumentException("Steg possible values are: LSB1, LSB4 and LSBI");
         }
         this.stegMode = steg;
+    }
+
+    private static byte[] hash(byte[] bytes, String method) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance(method);
+        return md.digest(bytes);
+    }
+
+    public static byte[] sha256(byte[] bytes) throws NoSuchAlgorithmException {
+        return hash(bytes, "SHA-256");
+    }
+
+    private byte[][] EVPBytesToKeyAndIv(int iterations, byte[] data, int keySize, int ivSize) throws NoSuchAlgorithmException {
+        byte[] mdBuff = sha256(data);
+        byte[] key = new byte[keySize];
+        int keyIndex = 0;
+        byte[] iv = new byte[ivSize];
+        int ivIndex = 0;
+        while (true) {
+            for (int i = 1; i < iterations; i++) {
+                mdBuff = sha256(mdBuff);
+            }
+            int mdBuffIndex = 0;
+            if (keyIndex < key.length) {
+                for (; (mdBuffIndex < mdBuff.length) && (keyIndex < key.length); mdBuffIndex++, keyIndex++) {
+                    key[keyIndex] = mdBuff[mdBuffIndex];
+                }
+            }
+            if (ivIndex < iv.length && mdBuffIndex < mdBuff.length) {
+                for (; (mdBuffIndex < mdBuff.length) && (ivIndex < iv.length); mdBuffIndex++, ivIndex++) {
+                    iv[ivIndex] = mdBuff[mdBuffIndex];
+                }
+            }
+            if (ivIndex == iv.length && keyIndex == key.length) {
+                break;
+            } else {
+                byte[] aux = new byte[mdBuff.length + data.length];
+                System.arraycopy(mdBuff, 0, aux, 0, mdBuff.length);
+                System.arraycopy(data, 0, aux, mdBuff.length, data.length);
+                mdBuff = sha256(aux);
+            }
+        }
+        byte[][] keyAndIv = new byte[2][];
+        keyAndIv[0] = key;
+        keyAndIv[1] = iv;
+        return keyAndIv;
     }
 }

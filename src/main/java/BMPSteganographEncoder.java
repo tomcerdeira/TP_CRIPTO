@@ -2,10 +2,7 @@ import exceptions.FileTooLargetException;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +21,7 @@ public class BMPSteganographEncoder {
         return editor;
     }
 
-    public BMPSteganographEncoder(BufferedImage inputBMP, byte[] encodingBytes, String extension) throws IOException {
+    public BMPSteganographEncoder(BufferedImage inputBMP, byte[] encodingBytes, String extension,ArgumentsParser argsParser) throws IOException {
 
         editor = new BMPEditor(inputBMP);
         originalImage = inputBMP;
@@ -45,10 +42,29 @@ public class BMPSteganographEncoder {
             encodeAux[i] = extension.getBytes(StandardCharsets.UTF_8)[j];
         }
 
-        this.encodingBytes = encodeAux;
+        if (argsParser.encodeMode && !argsParser.revertMode) {
+            FileOutputStream outputStream = new FileOutputStream("auxiliarToEncript");
+            outputStream.write(encodeAux);
+            outputStream.close();
+            argsParser.encoder.encryptFile("auxiliarToEncript", "encryptedFile");
+
+            FileInputStream f2 = new FileInputStream("encryptedFile");
+            byte[] f2ByteArray = f2.readAllBytes();
+            byte[] encodedSecretayx = new byte[4+f2ByteArray.length];
+            System.arraycopy(ByteBuffer.allocate(4).putInt(f2ByteArray.length).array(),0,encodedSecretayx,0, 4);
+            System.arraycopy(f2ByteArray, 0, encodedSecretayx, 4, f2ByteArray.length);
+            this.encodingBytes = encodedSecretayx;
+            System.out.println("LEN"+ encodingBytes.length);
+            System.out.println("LEN ENCR" + f2ByteArray.length);
+        }else{
+            this.encodingBytes = encodeAux;
+        }
+
 
         System.out.println(maxHiddenFileSize(editor));
     }
+
+    /// TAM ENCI || ENCR(
 
     // TODO: hacer funcion que retorne la extension del archivo escondido
 
@@ -117,14 +133,12 @@ public class BMPSteganographEncoder {
 
     }
 
-
+    /// LSB1(TE || ENC(TR || DA || EXT))
     public static byte[] revertLSB1(byte[] aux) {
 
         byte[] image = aux;
 
-        int encodedDataLength= getLengthOfEncodedData_LSB1(image);
-
-        System.out.println(encodedDataLength-4); // TODO: BORRAR
+        int encodedDataLength= getLengthOfEncodedData_LSB1(image); // TE + 4
 
         int cantBytesOfImageForOneOfData = 8;
         int cantBitsToRead = encodedDataLength * cantBytesOfImageForOneOfData;
@@ -154,6 +168,7 @@ public class BMPSteganographEncoder {
              }
         }
 
+        // ENC(TR || DA || EXT) + B B B B
         return desencodedData;
 
     }
