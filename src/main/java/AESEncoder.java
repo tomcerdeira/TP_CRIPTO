@@ -11,17 +11,13 @@ import java.security.SecureRandom;
 
 
 public class AESEncoder implements Encoder{
-
-    private File inputFile;
-    private File outputFile;
     private final String algorithm;
     private final SecretKey key;
     private final IvParameterSpec iv;
+    private File encryptedFile ;
 
 
-    public AESEncoder(String algorithm, String inputFilePath, String outPutFilePath, SecretKey key, IvParameterSpec iv) {
-        this.inputFile = new File(inputFilePath);
-        this.outputFile = new File(outPutFilePath);
+    public AESEncoder(String algorithm, SecretKey key, IvParameterSpec iv) {
         this.algorithm = algorithm;
         this.key = key;
         this.iv = iv;
@@ -33,9 +29,9 @@ public class AESEncoder implements Encoder{
         return new IvParameterSpec(iv);
     }
 
-    private void encryptOrDecrypt(Cipher cipher) throws IOException, IllegalBlockSizeException, BadPaddingException {
-        FileInputStream inputStream = new FileInputStream(this.inputFile);
-        FileOutputStream outputStream = new FileOutputStream(this.outputFile);
+    private void encryptOrDecrypt(Cipher cipher, String inputFilePath, String outPutFilePath) throws IOException, IllegalBlockSizeException, BadPaddingException {
+        FileInputStream inputStream = new FileInputStream(inputFilePath);
+        FileOutputStream outputStream = new FileOutputStream(outPutFilePath);
         byte[] buffer = new byte[64];
         int bytesRead;
         while ((bytesRead = inputStream.read(buffer)) != -1) {
@@ -53,8 +49,9 @@ public class AESEncoder implements Encoder{
     }
 
     @Override
-    public void encryptFile() {
+    public void encryptFile( String inputFilePath, String outPutFilePath) {
         try {
+            this.encryptedFile = new File(outPutFilePath);
             Cipher cipher = Cipher.getInstance(algorithm); //TODO: Agregar que cuando el modo no toma IV sacarlo
 
             if(algorithm.contains("ECB")){
@@ -62,7 +59,7 @@ public class AESEncoder implements Encoder{
             }else{
                 cipher.init(Cipher.ENCRYPT_MODE, key, iv);
             }
-            encryptOrDecrypt(cipher);
+            encryptOrDecrypt(cipher,inputFilePath,outPutFilePath);
         } catch (IOException | NoSuchPaddingException |
                 NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException |
                 BadPaddingException | IllegalBlockSizeException e) {
@@ -75,8 +72,6 @@ public class AESEncoder implements Encoder{
     @Override
     public void decryptFile(String inputFilePath, String outPutFilePath) {
         try {
-            this.inputFile = new File(inputFilePath);
-            this.outputFile = new File(outPutFilePath);
             Cipher cipher = Cipher.getInstance(algorithm);
 
             if(algorithm.contains("ECB")){
@@ -84,7 +79,7 @@ public class AESEncoder implements Encoder{
             }else{
                 cipher.init(Cipher.DECRYPT_MODE, key, iv);
             }
-            encryptOrDecrypt(cipher);
+            encryptOrDecrypt(cipher,inputFilePath,outPutFilePath);
         } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
             throw new RuntimeException();
@@ -93,6 +88,6 @@ public class AESEncoder implements Encoder{
 
     @Override
     public File getEncryptedFile(){
-        return this.outputFile;
+        return null;
     }
 }

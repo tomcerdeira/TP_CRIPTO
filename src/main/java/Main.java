@@ -29,7 +29,7 @@ public class Main {
         }
 
         if(argsParser.encodeMode) {
-            argsParser.encoder.encryptFile();
+            argsParser.encoder.encryptFile(argsParser.fileToEncrypt.getAbsolutePath(),"encryptedFile");
             FileInputStream f2 = new FileInputStream(argsParser.encoder.getEncryptedFile());
             arr = f2.readAllBytes();
         }

@@ -13,17 +13,15 @@ import java.util.Base64;
 
 public class DESEncoder implements Encoder{
 
-    private  File inputFile;
-    private  File outputFile;
     private final SecretKey key;
     private static Cipher ecipher;
     private static Cipher dcipher;
     private IvParameterSpec iv;
+    private File encryptedFile;
 
 
-    public DESEncoder(String algorithm, String inputFilePath, String outPutFilePath, SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException {
-        this.inputFile = new File(inputFilePath);
-        this.outputFile = new File(outPutFilePath);
+    public DESEncoder(String algorithm ,SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException {
+
         this.key = key;
 
         ecipher = Cipher.getInstance(algorithm);
@@ -48,10 +46,11 @@ public class DESEncoder implements Encoder{
     }
 
     @Override
-    public void encryptFile(){
+    public void encryptFile(String inputFilePath, String outPutFilePath){
         try {
-            FileInputStream inputStream = new FileInputStream(this.inputFile);
-            FileOutputStream outputStream = new FileOutputStream(this.outputFile);
+            FileInputStream inputStream = new FileInputStream(inputFilePath);
+            FileOutputStream outputStream = new FileOutputStream(outPutFilePath);
+            this.encryptedFile = new File(outPutFilePath);
 
             byte[] fileBytes = inputStream.readAllBytes();
             byte[] transformedBytes = ecipher.doFinal(fileBytes);
@@ -72,11 +71,11 @@ public class DESEncoder implements Encoder{
     @Override
     public void decryptFile(String inputFilePath, String outPutFilePath){
         try {
-            this.inputFile = new File(inputFilePath);
-            this.outputFile = new File(outPutFilePath);
+            File inputFile = new File(inputFilePath);
+            File outputFile = new File(outPutFilePath);
 
-            FileInputStream inputStream = new FileInputStream(this.inputFile);
-            FileOutputStream outputStream = new FileOutputStream(this.outputFile);
+            FileInputStream inputStream = new FileInputStream(inputFile);
+            FileOutputStream outputStream = new FileOutputStream(outputFile);
 
             byte[] fileBytes = Base64.getDecoder().decode(inputStream.readAllBytes());
             byte[] transformedBytes = dcipher.doFinal(fileBytes);
@@ -93,7 +92,7 @@ public class DESEncoder implements Encoder{
 
     @Override
     public File getEncryptedFile(){
-        return this.outputFile;
+        return this.encryptedFile;
     }
 
 }

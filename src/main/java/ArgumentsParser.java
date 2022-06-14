@@ -183,7 +183,7 @@ public class ArgumentsParser {
                     if(fileToEncrypt == null){
                         fileToEncrypt = fileCarrier;
                     }
-                    this.encoder = new AESEncoder("AES/"+blocksMode+"/PKCS5Padding",fileToEncrypt.getPath(),"src/main/resources/encriptadoBasura.bmp",keyForAes,AESEncoder.generateIv());
+                    this.encoder = new AESEncoder("AES/"+blocksMode+"/PKCS5Padding",keyForAes,AESEncoder.generateIv());
                     break;
                 }
                 case "DES":{
@@ -191,7 +191,8 @@ public class ArgumentsParser {
                         fileToEncrypt = fileCarrier;
                     }
                     SecretKey keyForDes = SecretKeyFactory.getInstance("DES").generateSecret(new DESKeySpec(password.getBytes()));
-                    this.encoder = new DESEncoder("DES/" + blocksMode+"/PKCS5Padding" ,fileToEncrypt.getPath(), "src/main/resources/encriptadoBasura.bmp", keyForDes);
+                    this.encoder = new DESEncoder("DES/" + blocksMode+"/PKCS5Padding" , keyForDes);
+                    break;
                 }
             }
         }
