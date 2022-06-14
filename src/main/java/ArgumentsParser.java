@@ -147,10 +147,12 @@ public class ArgumentsParser {
                         break;
                     case "aes192":
                         encodeMode = "AES";
-                        keyLen = 192;
+                        keyLen = 192;break;
+
                     case "aes256":
                         encodeMode = "AES";
                         keyLen = 265;
+                        break;
                     case "des":
                         encodeMode = "DES";
                         break;
@@ -176,10 +178,18 @@ public class ArgumentsParser {
             String password = Arrays.stream(this.getArgumentValue("pass")).findAny().get();
             switch (encodeMode){
                 case "AES":{
+                    // TODO REVISAR GENRACION DE CLAVE NO SE PUEDE USAR SALT!!
                     SecretKey keyForAes = GeneratedSecretKey.getKeyFromPassword("PBKDF2WithHmacSHA256","AES",password, "salt",keyLen);
+                    if(fileToEncrypt == null){
+                        fileToEncrypt = fileCarrier;
+                    }
                     this.encoder = new AESEncoder("AES/"+blocksMode+"/PKCS5Padding",fileToEncrypt.getPath(),"src/main/resources/encriptadoBasura.bmp",keyForAes,AESEncoder.generateIv());
+                    break;
                 }
                 case "DES":{
+                    if(fileToEncrypt == null){
+                        fileToEncrypt = fileCarrier;
+                    }
                     SecretKey keyForDes = SecretKeyFactory.getInstance("DES").generateSecret(new DESKeySpec(password.getBytes()));
                     this.encoder = new DESEncoder("DES/" + blocksMode+"/PKCS5Padding" ,fileToEncrypt.getPath(), "src/main/resources/encriptadoBasura.bmp", keyForDes);
                 }
