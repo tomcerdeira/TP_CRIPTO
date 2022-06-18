@@ -1,3 +1,5 @@
+package encoders;
+
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.File;
@@ -11,7 +13,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 
-public class DESEncoder implements Encoder{
+public class DESEncoder implements Encoder {
 
     private final SecretKey key;
     private static Cipher ecipher;
@@ -46,7 +48,7 @@ public class DESEncoder implements Encoder{
     }
 
     @Override
-    public void encryptFile(String inputFilePath, String outPutFilePath){
+    public void encrypt(String inputFilePath, String outPutFilePath){
         try {
             FileInputStream inputStream = new FileInputStream(inputFilePath);
             FileOutputStream outputStream = new FileOutputStream(outPutFilePath);
@@ -69,22 +71,14 @@ public class DESEncoder implements Encoder{
     }
 
     @Override
-    public void decryptFile(String inputFilePath, String outPutFilePath){
+    public byte[] decrypt(byte[] data){
         try {
-            File inputFile = new File(inputFilePath);
-            File outputFile = new File(outPutFilePath);
 
-            FileInputStream inputStream = new FileInputStream(inputFile);
-            FileOutputStream outputStream = new FileOutputStream(outputFile);
+            byte[] fileBytes = Base64.getDecoder().decode(data);
 
-            byte[] fileBytes = Base64.getDecoder().decode(inputStream.readAllBytes());
-            byte[] transformedBytes = dcipher.doFinal(fileBytes);
+            return dcipher.doFinal(fileBytes);
 
-            if (transformedBytes != null) {
-                outputStream.write(transformedBytes);
-            }
-
-        }catch( IOException| BadPaddingException|IllegalBlockSizeException e){
+        }catch( BadPaddingException|IllegalBlockSizeException e){
             e.printStackTrace();
             throw  new RuntimeException();
         }

@@ -1,3 +1,7 @@
+import encoders.AESEncoder;
+import encoders.DESEncoder;
+import encoders.Encoder;
+
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -7,7 +11,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -40,17 +43,12 @@ public class ArgumentsParser {
     // Check if flag is given
     public boolean containsFlag(String flagName)
     {
-        if(flags.contains(flagName))
-            return true;
-        return false;
+        return flags.contains(flagName);
     }
 
     public boolean containsArg(String name)
     {
-        if(map.containsKey(name)){
-        return true;
-    }
-        return false;
+        return map.containsKey(name);
     }
 
     // Return argument value for particular argument name
@@ -152,11 +150,12 @@ public class ArgumentsParser {
                         break;
                     case "aes192":
                         encodeMode = "AES";
-                        keyLen = 192;break;
+                        keyLen = 192;
+                        break;
 
                     case "aes256":
                         encodeMode = "AES";
-                        keyLen = 265;
+                        keyLen = 256;
                         break;
                     case "des":
                         encodeMode = "DES";

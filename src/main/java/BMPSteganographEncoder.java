@@ -2,31 +2,26 @@ import exceptions.FileTooLargetException;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.math.BigInteger;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Objects;
 
 public class BMPSteganographEncoder {
 
     private BMPEditor editor;
-    private final BufferedImage originalImage;
-    private byte[] encodingBytes;
+    private final byte[] originalImage;
+    private final byte[] encodingBytes;
 
     public BMPEditor getEditor() {
         return editor;
     }
 
-    public BMPSteganographEncoder(BufferedImage inputBMP, byte[] encodingBytes, String extension,ArgumentsParser argsParser) throws IOException {
+    public BMPSteganographEncoder(byte[] inputBMP, byte[] encodingBytes, String extension,ArgumentsParser argsParser) throws IOException {
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(inputBMP, "bmp", baos);
-
-        editor = new BMPEditor(baos.toByteArray());
+        editor = new BMPEditor(inputBMP);
         originalImage = inputBMP;
 
         StringBuilder byteBuilderForInvertingBytes = new StringBuilder();
@@ -49,7 +44,7 @@ public class BMPSteganographEncoder {
             FileOutputStream outputStream = new FileOutputStream("auxiliarToEncript");
             outputStream.write(encodeAux);
             outputStream.close();
-            argsParser.encoder.encryptFile("auxiliarToEncript", "encryptedFile");
+            argsParser.encoder.encrypt("auxiliarToEncript", "encryptedFile");
 
             FileInputStream f2 = new FileInputStream("encryptedFile");
             byte[] f2ByteArray = f2.readAllBytes();
@@ -62,8 +57,6 @@ public class BMPSteganographEncoder {
         }else{
             this.encodingBytes = encodeAux;
         }
-
-
         System.out.println(maxHiddenFileSize(editor));
     }
 
@@ -110,72 +103,6 @@ public class BMPSteganographEncoder {
         this.editor.setBytes(image);
     }
 
-    private static int getLengthOfEncodedData_LSB1(byte[] image){
-
-        byte[] reconstructionOfByteInBytes = new byte[4];
-        int indexLen = 0;
-        StringBuilder reconstructionOfByteInString = new StringBuilder();
-
-        for (int currentIndex = END_OF_HEADER_INDEX, j=0 ; currentIndex < END_OF_HEADER_INDEX + BYTES_OF_LENGTH_LSB1; currentIndex++){
-
-            byte currentByte = image[currentIndex];
-
-            reconstructionOfByteInString.append(BMPSteganographEncoder.getBit(currentByte, 0));
-
-            if(j==7){
-                reconstructionOfByteInBytes[indexLen++] = (byte)Integer.parseInt(reconstructionOfByteInString.toString(), 2);
-                reconstructionOfByteInString = new StringBuilder();
-                j=0;
-            }else {
-                j++;
-            }
-
-        }
-
-        return new BigInteger(reconstructionOfByteInBytes).intValue() + FILE_EXTENSION_LENGTH;
-
-    }
-
-    /// LSB1(TE || ENC(TR || DA || EXT))
-    public static byte[] revertLSB1(byte[] aux) {
-
-        byte[] image = aux;
-
-        int encodedDataLength= getLengthOfEncodedData_LSB1(image); // TE + 4
-
-        int cantBytesOfImageForOneOfData = 8;
-        int cantBitsToRead = encodedDataLength * cantBytesOfImageForOneOfData;
-
-        StringBuilder reconstructionOfDataByteInString = new StringBuilder();
-
-        int offset = END_OF_HEADER_INDEX + BYTES_OF_LENGTH_LSB1;
-
-        byte[] desencodedData = new byte[encodedDataLength];
-
-        int desencodedDataIndex = 0;
-        int j = 0; // TODO: explicar que es este indice
-
-        for (int currentIndex = 0 ; currentIndex < cantBitsToRead; currentIndex++){
-
-             byte currentByte = image[offset + currentIndex];
-
-            reconstructionOfDataByteInString.append(BMPSteganographEncoder.getBit(currentByte, 0));
-
-             if(j==7){
-                 /// Despues de armar un byte en string, lo transformamos a un tipo byte
-                 desencodedData[desencodedDataIndex++] = (byte)Integer.parseInt(reconstructionOfDataByteInString.toString(), 2);
-                 reconstructionOfDataByteInString = new StringBuilder();
-                 j=0;
-             }else {
-                 j++;
-             }
-        }
-
-        // ENC(TR || DA || EXT) + B B B B
-        return desencodedData;
-
-    }
-
     public void LSB4() throws FileTooLargetException {
 
         if( (encodingBytes.length * 2) > editor.getBitArraySize())
@@ -207,85 +134,6 @@ public class BMPSteganographEncoder {
         this.editor.setBytes(image);
     }
 
-    private static int getLengthOfEncodedData_LSB4(byte[] image){
-
-        byte[] reconstructionOfByteInBytes = new byte[4];
-        StringBuilder lenBuilder = new StringBuilder();
-        int indexLen = 0;
-
-        for (int currentIndex = END_OF_HEADER_INDEX, j=0 ; currentIndex < END_OF_HEADER_INDEX + BYTES_OF_LENGTH_LSB4; currentIndex++){
-
-            byte currentByte = image[currentIndex];
-
-            StringBuilder reconstructionOfByteInString = new StringBuilder();
-
-            for(int dec = 0; dec < 4; dec++){
-                reconstructionOfByteInString.append(BMPSteganographEncoder.getBit(currentByte, 3));
-                currentByte = (byte) (currentByte<<1); // decalo los bits 4 veces para obtener los primeros 4 bits del byte
-            }
-
-            lenBuilder.append(reconstructionOfByteInString);
-
-           if(j==1){
-               reconstructionOfByteInBytes[indexLen++] = (byte)Integer.parseInt(lenBuilder.toString(), 2);
-               lenBuilder = new StringBuilder();
-               j=0;
-           }else {
-               j++;
-           }
-
-        }
-
-        return new BigInteger(reconstructionOfByteInBytes).intValue() + FILE_EXTENSION_LENGTH;
-
-    }
-
-    public static byte[] revertLSB4(byte[] inputImageBytes) {
-
-        byte[] image = inputImageBytes;
-
-        int encodedDataLength = BMPSteganographEncoder.getLengthOfEncodedData_LSB4(image);
-
-        System.out.println(encodedDataLength); // TODO: BORRAR
-
-        int cantBytesOfImageForOneOfData = 2;
-        int cantBitsToRead = encodedDataLength * cantBytesOfImageForOneOfData;
-
-        StringBuilder byteBuilder = new StringBuilder();
-
-        int offset = END_OF_HEADER_INDEX + BYTES_OF_LENGTH_LSB4;
-
-        byte[] desencodedData = new byte[encodedDataLength];
-
-        int desencodedDataIndex = 0;
-        int j = 0; // TODO: explicar que es este indice
-
-        for (int currentIndex = 0 ; currentIndex < cantBitsToRead; currentIndex++){
-
-            byte currentByte = image[offset + currentIndex];
-
-            StringBuilder reconstructionOfDataByteInString = new StringBuilder();
-
-            for(int dec = 0; dec < 4; dec++){
-                reconstructionOfDataByteInString.append(BMPSteganographEncoder.getBit(currentByte, 3));
-                currentByte = (byte) (currentByte<<1); // decalo los bits 4 veces para obtener los primeros 4 bits del byte
-            }
-            byteBuilder.append(reconstructionOfDataByteInString);
-
-            if(j==1){
-                /// Despues de armar un byte en string, lo transformamos a un tipo byte
-                desencodedData[desencodedDataIndex++] = (byte)Integer.parseInt(byteBuilder.toString(), 2);
-                byteBuilder = new StringBuilder();
-                j=0;
-            }else {
-                j++;
-            }
-        }
-
-        return desencodedData;
-
-    }
-
     // TODO: revisar su funcionamiento
     public void LSBImproved() throws FileTooLargetException, IOException {
 
@@ -298,9 +146,7 @@ public class BMPSteganographEncoder {
         // Paso de hacerle LSB1 a la imagen portadora con los bytes a ocultar
         BMPEditor oldEditor = this.editor;
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(this.originalImage, "bmp", baos);
-        this.editor = new BMPEditor(baos.toByteArray());
+        this.editor = new BMPEditor(originalImage);
         this.LSB1();
 
         // Copia auxiliar de la imagen portadora + bytes a ocultar
@@ -435,43 +281,7 @@ public class BMPSteganographEncoder {
 
     }
 
-    public static byte[] revertLSBI(byte[] data) throws IOException {
-        BMPEditor editor = new BMPEditor(data);
-        ByteIterator iter = editor.byteIterator();
 
-        boolean[] pattern = new boolean[4];
-        for(int i = 0; i < 4; i ++) {
-            pattern[i] = iter.NextLSB() == 1;
-        }
-
-        LSBIterator lsbIiter = new LSBIterator(editor, pattern, 4);
-
-        // Extract file size
-        int size = 0;
-        for(int i = 0; i < 32; i ++) size = (size << 1) + lsbIiter.NextLSB();
-
-        // Extract file data
-        byte[] file = new byte[size];
-        for (int i = 0; i < size; i++) {
-            int b = 0;
-            for (int j = 0; j < 8; j++) b = (b << 1) + lsbIiter.NextLSB();
-            file[i] = (byte) b;
-        }
-
-//        if(!isEncrypted) { // Get file extension if not encrypted
-//            byte[] extension = new byte[10];
-//            int b;
-//            int i = 0;
-//            do {
-//                b = 0;
-//                for (int j = 0; j < 8; j++) b = (b << 1) + lsbIiter.NextLSB();
-//                extension[i++] = (byte) b;
-//            } while (b != 0);
-//            fd.setExt(new String(extension, StandardCharsets.UTF_8));
-//        }
-
-        return file;
-    }
 
     private int maxHiddenFileSize(BMPEditor editor){
         return (editor.getImageHeight() * editor.getImageWidth() * 3) / 8;

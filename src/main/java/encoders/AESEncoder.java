@@ -1,3 +1,5 @@
+package encoders;
+
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.File;
@@ -11,7 +13,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 
-public class AESEncoder implements Encoder{
+public class AESEncoder implements Encoder {
     private final String algorithm;
     private final SecretKey key;
     private final IvParameterSpec iv;
@@ -50,7 +52,7 @@ public class AESEncoder implements Encoder{
     }
 
     @Override
-    public void encryptFile( String inputFilePath, String outPutFilePath) {
+    public void encrypt(String inputFilePath, String outPutFilePath) {
         try {
             this.encryptedFile = new File(outPutFilePath);
             Cipher cipher = Cipher.getInstance(algorithm); //TODO: Agregar que cuando el modo no toma IV sacarlo
@@ -81,7 +83,7 @@ public class AESEncoder implements Encoder{
     }
 
     @Override
-    public void decryptFile(String inputFilePath, String outPutFilePath) {
+    public byte[] decrypt(byte[] data) {
         try {
             Cipher cipher = Cipher.getInstance(algorithm);
 
@@ -91,16 +93,8 @@ public class AESEncoder implements Encoder{
                 cipher.init(Cipher.DECRYPT_MODE, key, iv);
             }
 
-            FileInputStream inputStream = new FileInputStream(inputFilePath);
-            FileOutputStream outputStream = new FileOutputStream(outPutFilePath);
-
-            byte[] fileBytes = inputStream.readAllBytes();
-            byte[] transformedBytes = cipher.doFinal(fileBytes);
-
-            if (transformedBytes != null) {
-                outputStream.write(transformedBytes);
-            }
-        } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+            return cipher.doFinal(data);
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
             throw new RuntimeException();
         }

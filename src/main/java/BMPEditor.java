@@ -45,10 +45,11 @@ public class BMPEditor {
     private final int rowBytesSize;
 
     private final int bitArraySize;
+    private final byte[] bytes2;
 
-    public BMPEditor(byte[] image) throws IOException {
-
-        bytes = image;
+    public BMPEditor(byte[] bytes) throws IOException {
+        this.bytes = bytes;
+        this.bytes2 = bytes;
 
         if(!verifyVersion3())
             throw new NotVersion3BMPException();
