@@ -37,7 +37,7 @@ public class Main {
                     desencoded = BMPSteganographEncoder.revertLSB4(f3.readAllBytes()); // ENC(TR || DA || EXT) + 4bytes
                     break;
                 case "LSBI":
-//                        desencoded = BMPSteganographEncoder.revertLSBI(f3.readAllBytes());///TODO
+                        desencoded = BMPSteganographEncoder.revertLSBI(f3.readAllBytes());
                     break;
             }
             byte [] desencodedWithOutExtension = new byte[desencoded.length-4]; // ENC(TR || DA || EXT)

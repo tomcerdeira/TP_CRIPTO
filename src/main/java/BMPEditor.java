@@ -45,14 +45,10 @@ public class BMPEditor {
     private final int rowBytesSize;
 
     private final int bitArraySize;
-    private final byte[] bytes2;
 
-    public BMPEditor(BufferedImage image) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(image, "bmp", baos);
+    public BMPEditor(byte[] image) throws IOException {
 
-        bytes = baos.toByteArray();
-        bytes2 = baos.toByteArray();
+        bytes = image;
 
         if(!verifyVersion3())
             throw new NotVersion3BMPException();

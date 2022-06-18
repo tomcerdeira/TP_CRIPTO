@@ -23,7 +23,10 @@ public class BMPSteganographEncoder {
 
     public BMPSteganographEncoder(BufferedImage inputBMP, byte[] encodingBytes, String extension,ArgumentsParser argsParser) throws IOException {
 
-        editor = new BMPEditor(inputBMP);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(inputBMP, "bmp", baos);
+
+        editor = new BMPEditor(baos.toByteArray());
         originalImage = inputBMP;
 
         StringBuilder byteBuilderForInvertingBytes = new StringBuilder();
@@ -294,7 +297,10 @@ public class BMPSteganographEncoder {
 
         // Paso de hacerle LSB1 a la imagen portadora con los bytes a ocultar
         BMPEditor oldEditor = this.editor;
-        this.editor = new BMPEditor(this.originalImage);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(this.originalImage, "bmp", baos);
+        this.editor = new BMPEditor(baos.toByteArray());
         this.LSB1();
 
         // Copia auxiliar de la imagen portadora + bytes a ocultar
@@ -427,6 +433,44 @@ public class BMPSteganographEncoder {
         System.out.println(pattern);
         // TODO: hay que guardar este patron en los primero 4bytes de la imagen (leer mail Ana 6/06 )
 
+    }
+
+    public static byte[] revertLSBI(byte[] data) throws IOException {
+        BMPEditor editor = new BMPEditor(data);
+        ByteIterator iter = editor.byteIterator();
+
+        boolean[] pattern = new boolean[4];
+        for(int i = 0; i < 4; i ++) {
+            pattern[i] = iter.NextLSB() == 1;
+        }
+
+        LSBIterator lsbIiter = new LSBIterator(editor, pattern, 4);
+
+        // Extract file size
+        int size = 0;
+        for(int i = 0; i < 32; i ++) size = (size << 1) + lsbIiter.NextLSB();
+
+        // Extract file data
+        byte[] file = new byte[size];
+        for (int i = 0; i < size; i++) {
+            int b = 0;
+            for (int j = 0; j < 8; j++) b = (b << 1) + lsbIiter.NextLSB();
+            file[i] = (byte) b;
+        }
+
+//        if(!isEncrypted) { // Get file extension if not encrypted
+//            byte[] extension = new byte[10];
+//            int b;
+//            int i = 0;
+//            do {
+//                b = 0;
+//                for (int j = 0; j < 8; j++) b = (b << 1) + lsbIiter.NextLSB();
+//                extension[i++] = (byte) b;
+//            } while (b != 0);
+//            fd.setExt(new String(extension, StandardCharsets.UTF_8));
+//        }
+
+        return file;
     }
 
     private int maxHiddenFileSize(BMPEditor editor){

@@ -22,6 +22,26 @@ public class ByteIterator {
         i++;
     }
 
+    public int NextLSB() {
+        if(i > editor.getBitArraySize())
+            throw new NoSuchElementException();
+
+        int bit = editor.getBitArrayByte(i) & 1;
+        i++;
+
+        return bit;
+    }
+
+    public int NextNLSB(int n) {
+        if(i > editor.getBitArraySize())
+            throw new NoSuchElementException();
+
+        int bits = editor.getBitArrayByte(i) & firstNBit(n);
+        i++;
+
+        return bits;
+    }
+
     private static int firstNBit(int n){
         if(n <= 0)
             return 0;
