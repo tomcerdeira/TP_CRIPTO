@@ -103,7 +103,7 @@ public class BMPSteganographDecoder {
         byte[] file = new byte[size];
         for (int i = 0; i < size; i++) {
             int b = iter.NextNLSB(4) & 0xF;
-            b = (b << 4) + iter.NextNLSB(4) & 0xF;
+            b = (b << 4) + (iter.NextNLSB(4) & 0xF);
             file[i] = (byte) b;
         }
 

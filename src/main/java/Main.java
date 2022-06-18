@@ -18,16 +18,6 @@ public class Main {
 
         ArgumentsParser argsParser = new ArgumentsParser(args);
 
-
-
-
-//        argsParser.encoder.encryptFile(argsParser.fileToEncrypt.getAbsolutePath(), "encryptedFile");
-//
-//        argsParser.encoder.decryptFile("encryptedFile", "SALIDA_DESENECTIPTADA.bmp");// ENC(TR || DA || EXT) --> TR || DA || EXT
-//
-//
-//        System.exit(1);
-
         if (argsParser.revertMode) {
             FileInputStream f3 = new FileInputStream(argsParser.fileCarrier);
 
@@ -84,4 +74,4 @@ public class Main {
     }
 }
 
-// -embed -in C:/Users/Tomas/Documents/ITBA/Cripto/TP/TP_CRIPTO/src/main/resources/kings.bmp -p kings.bmp -out out -steg LSB1 -pass hola
+    // -embed -in C:/Users/Tomas/Documents/ITBA/Cripto/TP/TP_CRIPTO/src/main/resources/kings.bmp -p kings.bmp -out out -steg LSB1 -pass hola
