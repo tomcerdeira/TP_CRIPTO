@@ -21,7 +21,7 @@ public class Main {
         if (argsParser.revertMode) {
             FileInputStream f3 = new FileInputStream(argsParser.fileCarrier);
 
-            BMPSteganographDecoder decoder = new BMPSteganographDecoder(f3.readAllBytes(), argsParser.encodeMode);
+            BMPSteganographDecoder decoder = new BMPSteganographDecoder(f3.readAllBytes(), argsParser.encodeMode, true);
 
             FileData decodedFile;
 
@@ -38,11 +38,11 @@ public class Main {
 
                 int len = new BigInteger(Arrays.copyOfRange(decodedBytes, 0, 4)).intValue();
                 byte[] data = Arrays.copyOfRange(decodedBytes, 4, 4 + len);
-                String ext = new String(Arrays.copyOfRange(decodedBytes, 4 + len, decodedBytes.length), StandardCharsets.UTF_8);
+                String ext = new String(Arrays.copyOfRange(decodedBytes, 4 + len, decodedBytes.length-1), StandardCharsets.UTF_8);
 
                 generateFileFromByteArray(data, argsParser.outputFile.getAbsolutePath() + ext);
             } else {
-                generateFileFromByteArray(decodedFile.data, argsParser.outputFile.getAbsolutePath() + decodedFile.ext);
+                generateFileFromByteArray(decodedFile.data, argsParser.outputFile.getAbsolutePath());
             }
         } else{
             byte[] arr = getByteArrayDataToHide(argsParser) ;
@@ -66,9 +66,7 @@ public class Main {
     }
 
     private static void generateFileFromByteArray(byte[] array, String fileName) throws IOException {
-        File file = new File("C:\\Users\\ignac\\Desktop\\test\\out\\out.png");
-        file.createNewFile();
-        FileOutputStream outputStreamLSB1 = new FileOutputStream(file, false);
+        FileOutputStream outputStreamLSB1 = new FileOutputStream(fileName);
         outputStreamLSB1.write(array);
         outputStreamLSB1.close();
     }

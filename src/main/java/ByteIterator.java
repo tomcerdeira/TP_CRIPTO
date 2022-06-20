@@ -2,41 +2,28 @@ import java.util.NoSuchElementException;
 
 public class ByteIterator {
 
-    private final BMPEditor editor;
+    private final byte[] data;
     int i = 0;
 
-    public ByteIterator(BMPEditor editor) {
-        this.editor = editor;
-    }
-
-    public void NextSetLeastSignificantBits(byte b, int n) {
-        if(i > editor.getBitArraySize())
-            throw new NoSuchElementException();
-
-        byte currentByte = editor.getBitArrayByte(i);
-
-        currentByte = (byte)(currentByte & ~firstNBit(n));
-        byte bb = (byte)(b & firstNBit(n));
-
-        editor.setBitArrayByte(i, (byte)(currentByte | bb));
-        i++;
+    public ByteIterator(byte[] data) {
+        this.data = data;
     }
 
     public int NextLSB() {
-        if(i > editor.getBitArraySize())
+        if(i > data.length)
             throw new NoSuchElementException();
 
-        int bit = editor.getBitArrayByte(i) & 1;
+        int bit = data[i] & 1;
         i++;
 
         return bit;
     }
 
     public int NextNLSB(int n) {
-        if(i > editor.getBitArraySize())
+        if(i > data.length)
             throw new NoSuchElementException();
 
-        int bits = editor.getBitArrayByte(i) & firstNBit(n);
+        int bits = data[i] & firstNBit(n);
         i++;
 
         return bits;

@@ -2,25 +2,21 @@ import java.util.NoSuchElementException;
 
 public class LSBIterator {
 
-    private boolean[] pattern;
-    private BMPEditor editor;
+    private final boolean[] pattern;
+    private final byte[] data;
     int i;
 
-    public LSBIterator(BMPEditor editor, boolean[] pattern, int start) {
-        this.editor = editor;
+    public LSBIterator(byte[] data, boolean[] pattern, int start) {
+        this.data = data;
         this.pattern = pattern;
         this.i = start;
     }
 
-    public LSBIterator(BMPEditor editor, boolean[] pattern){
-        this(editor, pattern, 0);
-    }
-
     public int NextLSB() {
-        if(i > editor.getBitArraySize())
+        if(i > data.length)
             throw new NoSuchElementException();
 
-        byte b = editor.getBitArrayByte(i);
+        byte b = data[i];
 
         int type = (b >> 1) & 0b11;
         int bit = (b & 1);

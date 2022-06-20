@@ -146,7 +146,11 @@ public class BMPEditor {
     }
 
     public ByteIterator byteIterator(){
-        return new ByteIterator(this);
+        return new ByteIterator(Arrays.copyOfRange(bytes, bitArrayOffset, bytes.length));
+    }
+
+    public LSBIterator lsbIterator(boolean[] pattern, int start){
+        return new LSBIterator(Arrays.copyOfRange(bytes, bitArrayOffset, bytes.length), pattern, start);
     }
 
     public byte[] getCoverImageBytes() {
