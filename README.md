@@ -6,6 +6,22 @@
 
 ## Compilación y Ejecución del programa:
 
+Desde la carpeta del proyecto, ejecutar:
+
+```
+$ mvn clean install
+```
+
+Para generar un "Build":
+
+```
+$ mvn pre-clean
+
+$ mvn compile
+    
+$ mvn package
+```
+
 ## Parametros del programa:
 
 ### Para el ocultamiento de un archivo en un .bmp ###
