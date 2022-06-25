@@ -22,9 +22,10 @@ public class DESEncoder implements Encoder {
     private File encryptedFile;
 
 
-    public DESEncoder(String algorithm ,SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException {
+    public DESEncoder(String algorithm ,SecretKey key, IvParameterSpec iv) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException {
 
         this.key = key;
+        this.iv = iv;
 
         ecipher = Cipher.getInstance(algorithm);
         dcipher = Cipher.getInstance(algorithm);
@@ -74,9 +75,9 @@ public class DESEncoder implements Encoder {
     public byte[] decrypt(byte[] data){
         try {
 
-            byte[] fileBytes = Base64.getDecoder().decode(data);
+//            byte[] fileBytes = Base64.getDecoder().decode(data);
 
-            return dcipher.doFinal(fileBytes);
+            return dcipher.doFinal(data);
 
         }catch( BadPaddingException|IllegalBlockSizeException e){
             e.printStackTrace();

@@ -42,7 +42,7 @@ public class Main {
 
                 generateFileFromByteArray(data, argsParser.outputFile.getAbsolutePath() + ext);
             } else {
-                generateFileFromByteArray(decodedFile.data, argsParser.outputFile.getAbsolutePath());
+                generateFileFromByteArray(decodedFile.data, argsParser.outputFile.getAbsolutePath() + decodedFile.ext);
             }
         } else{
             byte[] arr = getByteArrayDataToHide(argsParser) ;

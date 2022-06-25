@@ -167,36 +167,30 @@ public class ArgumentsParser {
 
             if (this.containsArg("m")) {
                 blocksMode = Arrays.stream(this.getArgumentValue("m")).findAny().get();
-                switch (blocksMode) {
-                    case "ecb":
-                    case "cfb":
-                    case "ofb":
-                    case "cbc":
-                        blocksMode = blocksMode.toUpperCase();
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Encode \"-m\" possible values are: ecb, cfb, ofb and cbc");
-                }
+                blocksMode = switch (blocksMode) {
+                    case "ecb", "ofb", "cbc" -> blocksMode.toUpperCase();
+                    case "cfb" -> blocksMode.toUpperCase() + "8";
+                    default -> throw new IllegalArgumentException("Encode \"-m\" possible values are: ecb, cfb, ofb and cbc");
+                };
             }
 
             String password = Arrays.stream(this.getArgumentValue("pass")).findAny().get();
             switch (encodeMode){
-                case "AES":{
-                    // TODO REVISAR GENRACION DE CLAVE NO SE PUEDE USAR SALT!!
+                case "AES": {
                     KeyGenerator keyGen = KeyGenerator.getInstance("AES");
                     keyGen.init(keyLen);
                     byte[][] keyAndIV = EVPBytesToKeyAndIv(1, password.getBytes(StandardCharsets.UTF_8), keyLen/8, 16);
                     byte[] keyArr = keyAndIV[0];
                     SecretKey key = new SecretKeySpec(keyArr, "AES");
-                    this.encoder = new AESEncoder("AES/"+blocksMode+"/PKCS5Padding",key,new IvParameterSpec(keyAndIV[1]));
+                    this.encoder = new AESEncoder("AES/"+blocksMode+"/NoPadding",key,new IvParameterSpec(keyAndIV[1]));
                     break;
                 }
-                case "DES":{
+                case "DES": {
                     if(fileToEncrypt == null){
                         fileToEncrypt = fileCarrier;
                     }
-                    SecretKey keyForDes = SecretKeyFactory.getInstance("DES").generateSecret(new DESKeySpec(password.getBytes()));
-                    this.encoder = new DESEncoder("DES/" + blocksMode+"/PKCS5Padding" , keyForDes);
+                    byte[][] keyAndIV = EVPBytesToKeyAndIv(1, password.getBytes(StandardCharsets.UTF_8), keyLen/16, 8);
+                    this.encoder = new DESEncoder("DES/" + blocksMode+"/PKCS5Padding" , new SecretKeySpec( keyAndIV[0], "DES"),new IvParameterSpec(keyAndIV[1]));
                     break;
                 }
             }

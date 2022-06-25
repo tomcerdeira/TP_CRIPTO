@@ -30,7 +30,6 @@ public class BMPSteganographDecoder {
         for(int i = 0; i < 32; i ++) {
             int bit  = lsbIiter.NextLSB();
             size = (size << 1) + bit;
-            System.out.print(bit);
         }
 
         // Extract file data
