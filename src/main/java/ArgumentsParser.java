@@ -196,8 +196,9 @@ public class ArgumentsParser {
                     if(fileToEncrypt == null){
                         fileToEncrypt = fileCarrier;
                     }
-                    SecretKey keyForDes = SecretKeyFactory.getInstance("DES").generateSecret(new DESKeySpec(password.getBytes()));
-                    this.encoder = new DESEncoder("DES/" + blocksMode+"/PKCS5Padding" , keyForDes);
+                    System.out.println(password);
+                    byte[][] keyAndIV = EVPBytesToKeyAndIv(1, password.getBytes(StandardCharsets.UTF_8), keyLen/16, 8);
+                    this.encoder = new DESEncoder("DES/" + blocksMode+"/PKCS5Padding" , new SecretKeySpec( keyAndIV[0], "DES"),new IvParameterSpec(keyAndIV[1]));
                     break;
                 }
             }

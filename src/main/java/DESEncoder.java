@@ -20,10 +20,10 @@ public class DESEncoder implements Encoder{
     private File encryptedFile;
 
 
-    public DESEncoder(String algorithm ,SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException {
+    public DESEncoder(String algorithm ,SecretKey key, IvParameterSpec iv) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException {
 
         this.key = key;
-
+        this.iv = iv;
         ecipher = Cipher.getInstance(algorithm);
         dcipher = Cipher.getInstance(algorithm);
 
@@ -32,7 +32,6 @@ public class DESEncoder implements Encoder{
             ecipher.init(Cipher.ENCRYPT_MODE, key);
             dcipher.init(Cipher.DECRYPT_MODE, key);
         }else{
-            this.iv = DESEncoder.generateIv();
             ecipher.init(Cipher.ENCRYPT_MODE, key, iv);
             dcipher.init(Cipher.DECRYPT_MODE, key, iv);
         }
@@ -77,7 +76,7 @@ public class DESEncoder implements Encoder{
             FileInputStream inputStream = new FileInputStream(inputFile);
             FileOutputStream outputStream = new FileOutputStream(outputFile);
 
-            byte[] fileBytes = Base64.getDecoder().decode(inputStream.readAllBytes());
+            byte[] fileBytes = (inputStream.readAllBytes());
             byte[] transformedBytes = dcipher.doFinal(fileBytes);
 
             if (transformedBytes != null) {
