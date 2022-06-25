@@ -6,6 +6,8 @@
 
 ## Compilación y Ejecución del programa:
 
+### Compilacion ###
+
 Desde la carpeta del proyecto, ejecutar:
 
 ```
@@ -21,6 +23,15 @@ $ mvn compile
     
 $ mvn package
 ```
+
+### Ejecucion ###
+
+Mediante el uso del .sh, basta con hacer: 
+
+```
+$ stegobmp <PARAMETROS>
+```
+
 
 ## Parametros del programa:
 
