@@ -1,2 +1,2 @@
 #!/bin/bash
-java -jar ./out/stegobmp.jar $*
+java -jar ./target/stegobmp-jar-with-dependencies.jar $*
