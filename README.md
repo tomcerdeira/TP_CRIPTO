@@ -1,10 +1,26 @@
 # TP Cripto - 1Q2022
 
 - Trabajo Práctico de Criptografia y Seguridad - 1Q2022
-- Implementación en Java
+- Implementación en Java 17
 - Esteganografía
 
 ## Compilación y Ejecución del programa:
+
+Desde la carpeta del proyecto, ejecutar:
+
+```
+$ mvn clean install
+```
+
+Para generar un "Build":
+
+```
+$ mvn pre-clean
+
+$ mvn compile
+    
+$ mvn package
+```
 
 ## Parametros del programa:
 
